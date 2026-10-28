@@ -19,7 +19,7 @@ const obstacles = [
   "Lý do khác", "Mình chưa xác định được nguyên nhân", "Mình không muốn trả lời"
 ];
 
-type Screen = "intro" | "guide" | "assessment" | "results";
+type Screen = "intro" | "guide" | "about" | "assessment" | "results";
 
 export default function CareerReflectionApp() {
   const [screen, setScreen] = useState<Screen>("intro");
@@ -43,6 +43,12 @@ export default function CareerReflectionApp() {
     localStorage.setItem(STORE_KEY, JSON.stringify({ version: RULE_VERSION, answers, index, screen, savedAt: new Date().toISOString() }));
   }, [answers, index, screen, ready]);
 
+  useEffect(() => {
+    const openAbout = () => setScreen("about");
+    window.addEventListener("open-about", openAbout);
+    return () => window.removeEventListener("open-about", openAbout);
+  }, []);
+
   const stats = useMemo(() => summary(tasks, answers), [answers]);
   const current = tasks[index];
   const currentAnswer = answers[current?.id] || { updatedAt: new Date().toISOString() };
@@ -60,9 +66,10 @@ export default function CareerReflectionApp() {
 
   if (!ready) return <main className="loading">Đang mở tiến trình của bạn…</main>;
 
-  if (screen === "intro") return <Intro onStart={() => setScreen("guide")} hasProgress={stats.answered + stats.skipped > 0} onResume={() => setScreen("assessment")} onResults={() => setScreen("results")} onExploreGroup={(groupIndex) => { setIndex(groupIndex * 5); setScreen("assessment"); }} />;
-  if (screen === "guide") return <Guide onBack={() => setScreen("intro")} onContinue={() => setScreen("assessment")} onResults={() => setScreen("results")} />;
-  if (screen === "results") return <Results answers={answers} onHome={() => setScreen("intro")} onBack={() => setScreen("assessment")} onJump={(id) => { setIndex(tasks.findIndex((t) => t.id === id)); setScreen("assessment"); }} expanded={expanded} setExpanded={setExpanded} />;
+  if (screen === "about") return <AboutPage onHome={() => setScreen("intro")} onGuide={() => setScreen("guide")} onAssessment={() => setScreen(stats.answered + stats.skipped > 0 ? "assessment" : "guide")} onResults={() => setScreen("results")} />;
+  if (screen === "intro") return <Intro onStart={() => setScreen("guide")} onAbout={() => setScreen("about")} hasProgress={stats.answered + stats.skipped > 0} onResume={() => setScreen("assessment")} onResults={() => setScreen("results")} onExploreGroup={(groupIndex) => { setIndex(groupIndex * 5); setScreen("assessment"); }} />;
+  if (screen === "guide") return <Guide onBack={() => setScreen("intro")} onAbout={() => setScreen("about")} onContinue={() => setScreen("assessment")} onResults={() => setScreen("results")} />;
+  if (screen === "results") return <Results answers={answers} onHome={() => setScreen("intro")} onAbout={() => setScreen("about")} onBack={() => setScreen("assessment")} onJump={(id) => { setIndex(tasks.findIndex((t) => t.id === id)); setScreen("assessment"); }} expanded={expanded} setExpanded={setExpanded} />;
 
   const groupIndex = groups.indexOf(current.group);
   return (
@@ -71,6 +78,7 @@ export default function CareerReflectionApp() {
         <button className="brand brand-with-icon" onClick={() => setScreen("intro")}><span className="brand-symbol">✦</span><span>Lựa chọn nghề nghiệp</span></button>
         <nav className="app-nav" aria-label="Điều hướng chính">
           <button onClick={() => setScreen("intro")}>Trang chủ</button>
+          <button onClick={() => setScreen("about")}>Về chúng tôi</button>
           <button className="active" onClick={() => setScreen("assessment")}>Bộ câu hỏi</button>
           <button onClick={() => setScreen("results")}>Kết quả</button>
         </nav>
@@ -102,11 +110,12 @@ export default function CareerReflectionApp() {
   );
 }
 
-function SiteNav({ active, onHome, onGuide, onAssessment, onResults }: { active: "home" | "guide" | "assessment" | "results"; onHome: () => void; onGuide: () => void; onAssessment: () => void; onResults: () => void }) {
+function SiteNav({ active, onHome, onAbout, onGuide, onAssessment, onResults }: { active: "home" | "about" | "guide" | "assessment" | "results"; onHome: () => void; onAbout?: () => void; onGuide: () => void; onAssessment: () => void; onResults: () => void }) {
   return <header className="site-nav no-print">
     <button className="brand brand-with-icon" onClick={onHome}><span className="brand-symbol">✦</span><span>Lựa chọn nghề nghiệp</span></button>
     <nav aria-label="Điều hướng chính">
       <button className={active === "home" ? "active" : ""} onClick={onHome}>Trang chủ</button>
+      <button className={active === "about" ? "active" : ""} onClick={onAbout || (() => window.dispatchEvent(new Event("open-about")))}>Về chúng tôi</button>
       <button className={active === "guide" ? "active" : ""} onClick={onGuide}>Hướng dẫn</button>
       <button className={active === "assessment" ? "active" : ""} onClick={onAssessment}>Bộ câu hỏi</button>
       <button className={active === "results" ? "active" : ""} onClick={onResults}>Kết quả</button>
@@ -115,8 +124,8 @@ function SiteNav({ active, onHome, onGuide, onAssessment, onResults }: { active:
   </header>;
 }
 
-function Intro({ onStart, hasProgress, onResume, onResults, onExploreGroup }: { onStart: () => void; hasProgress: boolean; onResume: () => void; onResults: () => void; onExploreGroup: (groupIndex: number) => void }) {
-  return <main className="landing"><SiteNav active="home" onHome={() => {}} onGuide={onStart} onAssessment={hasProgress ? onResume : onStart} onResults={onResults} /><section className="hero"><div><p className="eyebrow">Bộ câu hỏi phản tư dành cho học sinh THPT</p><h1>ĐÁNH GIÁ LẠI QUÁ TRÌNH ĐƯA RA LỰA CHỌN NGHỀ NGHIỆP</h1><p className="lead">Chậm lại một chút để nhìn rõ điều bạn đã làm, điều còn băn khoăn và một vài bước tiếp theo phù hợp với chính bạn.</p><div className="hero-actions"><button className="primary large" onClick={onStart}>Bắt đầu</button>{hasProgress && <button className="secondary large" onClick={onResume}>Tiếp tục tiến trình</button>}</div><small>Khoảng 25 nhiệm vụ · Có thể tạm dừng bất cứ lúc nào</small></div><div className="hero-visual" aria-hidden="true"><div className="paper-card back"/><div className="paper-card"><span>01</span><p>Khám phá bản thân</p><div/><span>02</span><p>Tìm hiểu nghề nghiệp</p><div/><span>03</span><p>Chọn bước tiếp theo</p></div></div></section><section className="intro-note"><strong>“Lựa chọn nghề nghiệp”</strong><p>là nghề nghiệp bạn dự định làm trong tương lai, ví dụ Nhân sự hoặc Giáo viên. Công cụ này không kết luận về năng lực hay tương lai của bạn.</p></section><ResearchFoundation onExploreGroup={onExploreGroup} /></main>;
+function Intro({ onStart, onAbout, hasProgress, onResume, onResults, onExploreGroup }: { onStart: () => void; onAbout: () => void; hasProgress: boolean; onResume: () => void; onResults: () => void; onExploreGroup: (groupIndex: number) => void }) {
+  return <main className="landing"><SiteNav active="home" onHome={() => {}} onAbout={onAbout} onGuide={onStart} onAssessment={hasProgress ? onResume : onStart} onResults={onResults} /><section className="hero"><div><p className="eyebrow">Bộ câu hỏi phản tư dành cho học sinh THPT</p><h1>ĐÁNH GIÁ LẠI QUÁ TRÌNH ĐƯA RA LỰA CHỌN NGHỀ NGHIỆP</h1><p className="lead">Chậm lại một chút để nhìn rõ điều bạn đã làm, điều còn băn khoăn và một vài bước tiếp theo phù hợp với chính bạn.</p><div className="hero-actions"><button className="primary large" onClick={onStart}>Bắt đầu</button>{hasProgress && <button className="secondary large" onClick={onResume}>Tiếp tục tiến trình</button>}</div><small>Khoảng 25 nhiệm vụ · Có thể tạm dừng bất cứ lúc nào</small></div><div className="hero-visual" aria-hidden="true"><div className="paper-card back"/><div className="paper-card"><span>01</span><p>Khám phá bản thân</p><div/><span>02</span><p>Tìm hiểu nghề nghiệp</p><div/><span>03</span><p>Chọn bước tiếp theo</p></div></div></section><section className="intro-note"><strong>“Lựa chọn nghề nghiệp”</strong><p>là nghề nghiệp bạn dự định làm trong tương lai, ví dụ Nhân sự hoặc Giáo viên. Công cụ này không kết luận về năng lực hay tương lai của bạn.</p></section><ResearchFoundation onExploreGroup={onExploreGroup} /></main>;
 }
 
 function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: number) => void }) {
@@ -191,12 +200,36 @@ function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: n
   </section>;
 }
 
-function Guide({ onBack, onContinue, onResults }: { onBack: () => void; onContinue: () => void; onResults: () => void }) {
-  const items = ["Có 5 nhóm, mỗi nhóm gồm 5 nhiệm vụ.","Không có câu trả lời đúng hoặc sai.","Hãy dựa trên trải nghiệm thực tế của bạn.","Nếu chưa thực hiện, hãy trả lời trung thực; không cần cố chọn theo hướng tích cực.","Bạn có thể làm dần; bộ câu hỏi được khuyến khích hoàn thành trong 1 tuần.","Kết quả gợi ý bước tiếp theo, không đánh giá năng lực hay tương lai nghề nghiệp."];
-  return <main className="guide-page"><SiteNav active="guide" onHome={onBack} onGuide={() => {}} onAssessment={onContinue} onResults={onResults} /><section className="guide-card"><p className="eyebrow">Trước khi bắt đầu</p><h1>Một số lưu ý</h1><div className="guide-list">{items.map((x,i)=><div key={x}><span>{String(i+1).padStart(2,"0")}</span><p>{x}</p></div>)}</div><div className="privacy-note"><strong>Quyền riêng tư</strong><p>Câu trả lời chỉ được lưu trong trình duyệt trên thiết bị hiện tại. Dữ liệu không tự đồng bộ sang thiết bị khác.</p></div><div className="card-actions"><button className="secondary" onClick={onBack}>Quay lại</button><button className="primary" onClick={onContinue}>Tôi đã hiểu · Tiếp tục</button></div></section></main>;
+function AboutPage({ onHome, onGuide, onAssessment, onResults }: { onHome: () => void; onGuide: () => void; onAssessment: () => void; onResults: () => void }) {
+  const process = [
+    ["01", "Nghiên cứu khoa học", "Tìm hiểu mối liên hệ giữa áp lực đồng trang lứa và mức độ trưởng thành nghề nghiệp."],
+    ["02", "Phản tư cá nhân", "Học sinh nhìn lại quá trình lựa chọn nghề nghiệp của mình."],
+    ["03", "Tự đánh giá", "Đánh giá mức độ thực hiện và sự tự tin đối với từng nhiệm vụ ra quyết định nghề nghiệp."],
+    ["04", "Gợi ý hành động", "Xác định những nội dung cần cải thiện và các bước tiếp theo."],
+  ];
+  const authors = [
+    ["Châu Hồng Thiên An", "Tác giả nghiên cứu và người phát triển công cụ phản tư."],
+    ["Nguyễn Gia Như Ý", "Tác giả nghiên cứu và người phát triển công cụ phản tư."],
+  ];
+  return <main className="about-page">
+    <SiteNav active="about" onHome={onHome} onAbout={() => {}} onGuide={onGuide} onAssessment={onAssessment} onResults={onResults} />
+    <section className="about-hero">
+      <div className="about-hero-copy"><p className="eyebrow">Về chúng tôi</p><h1>Your future is yours to discover.</h1><p>Chúng tôi tin rằng mỗi học sinh đều có khả năng chủ động định hình tương lai của mình. Điều các bạn cần không phải lúc nào cũng là một câu trả lời có sẵn, mà đôi khi là cơ hội để hiểu bản thân rõ hơn và tự tin hơn trong những lựa chọn của mình.</p><p>Công cụ phản tư được phát triển nhằm hỗ trợ học sinh nhìn lại quá trình lựa chọn nghề nghiệp, nhận diện những nhiệm vụ cần cải thiện và xác định các bước hành động phù hợp.</p><strong>Thấu hiểu bản thân. Chủ động lựa chọn. Từng bước trưởng thành.</strong><button className="text-button about-scroll" onClick={() => document.getElementById("our-story")?.scrollIntoView({ behavior: "smooth" })}>Khám phá câu chuyện ↓</button></div>
+      <div className="about-hero-art" aria-hidden="true"><div className="journey-orbit orbit-one"/><div className="journey-orbit orbit-two"/><div className="journey-path"/><span className="journey-point point-one">Bạn</span><span className="journey-point point-two">Khám phá</span><span className="journey-point point-three">Lựa chọn</span><div className="journey-sun">Tương lai</div></div>
+    </section>
+    <section className="about-section story-section" id="our-story"><div className="about-kicker"><span>01</span><p>Câu chuyện của chúng tôi</p></div><div className="story-grid"><div><h2>Một lựa chọn nghề nghiệp nên bắt đầu từ đâu?</h2><p>Trong những năm cuối cấp, học sinh phải đối diện với nhiều câu hỏi về tương lai: Mình phù hợp với nghề gì? Mình thực sự yêu thích điều gì? Liệu lựa chọn của mình có đang bị ảnh hưởng từ những người xung quanh?</p><p>Áp lực đồng trang lứa có thể khiến quá trình lựa chọn nghề nghiệp trở nên phức tạp hơn, đặc biệt khi học sinh chưa thực sự tự tin vào khả năng của bản thân trong việc đưa ra quyết định.</p><p>Từ những trăn trở đó, một nghiên cứu khoa học được thực hiện nhằm tìm hiểu mối liên hệ giữa áp lực đồng lứa và mức độ trưởng thành nghề nghiệp của học sinh THPT tại TP.HCM.</p><p>Nhưng việc tìm hiểu vấn đề mới chỉ là bước khởi đầu. Chúng tôi tiếp tục đặt ra câu hỏi: Làm thế nào để những phát hiện từ nghiên cứu có thể trở thành một công cụ thiết thực, giúp học sinh nhìn lại bản thân và chủ động hơn trong quá trình lựa chọn nghề nghiệp?</p><p>Đó là động lực để công cụ phản tư được hình thành.</p></div><blockquote>“Bạn không cần phải có sẵn mọi câu trả lời. Bạn có thể bắt đầu bằng việc hiểu bản thân rõ hơn.”</blockquote></div></section>
+    <section className="about-section science-section"><div className="about-kicker"><span>02</span><p>Nền tảng khoa học</p></div><div className="science-intro"><h2>Từ nghiên cứu đến ứng dụng thực tế.</h2><div><p>Công cụ được phát triển từ nghiên cứu khoa học về ảnh hưởng của áp lực đồng lứa đến mức độ trưởng thành nghề nghiệp của học sinh THPT tại TP.HCM.</p><p>Kết quả nghiên cứu cho thấy sự tự tin vào khả năng thực hiện các nhiệm vụ ra quyết định nghề nghiệp đóng vai trò trung gian trong mối liên hệ giữa áp lực đồng lứa và mức độ trưởng thành nghề nghiệp trong mô hình nghiên cứu.</p><p>Phát hiện này gợi mở hướng phát triển công cụ theo hướng hỗ trợ học sinh nhìn lại quá trình lựa chọn nghề nghiệp, tự đánh giá mức độ tự tin và xác định những nội dung cần cải thiện.</p></div></div><div className="research-process">{process.map((step, index) => <article key={step[0]}><span>{step[0]}</span><h3>{step[1]}</h3><p>{step[2]}</p>{index < process.length - 1 && <i aria-hidden="true">→</i>}</article>)}</div><small className="science-note">Sơ đồ thể hiện quá trình chuyển hóa định hướng nghiên cứu thành cấu trúc công cụ, không phải bằng chứng kiểm định hiệu quả của công cụ.</small></section>
+    <section className="about-section team-section"><div className="about-kicker"><span>03</span><p>Nhóm tác giả</p></div><h2>Đằng sau công cụ phản tư.</h2><p className="team-intro">Công cụ phản tư được hình thành từ mong muốn tìm hiểu những khó khăn mà học sinh gặp phải trong quá trình lựa chọn nghề nghiệp và tìm kiếm những cách thức hỗ trợ thiết thực hơn.</p><div className="author-grid">{authors.map((author, index) => <article key={author[0]}><div className="portrait-placeholder" aria-label="Vị trí ảnh chân dung sẽ được bổ sung sau"><span>{String(index + 1).padStart(2, "0")}</span><p>Ảnh chân dung<br />sẽ được bổ sung</p></div><div><h3>{author[0]}</h3><p>{author[1]}</p></div></article>)}</div><div className="team-message"><p>Chúng mình hy vọng công cụ phản tư này có thể giúp các bạn học sinh hiểu bản thân rõ hơn, tự tin cân nhắc những lựa chọn và từng bước tìm ra hướng đi phù hợp với chính mình.</p><p>Chúng mình tin rằng mỗi người đều có một hành trình riêng. Thay vì đưa ra câu trả lời thay các bạn, chúng mình mong công cụ này có thể giúp các bạn có thêm cơ sở để tự đưa ra những quyết định có ý nghĩa với tương lai của mình.</p></div></section>
+    <section className="about-cta"><p className="eyebrow">Bắt đầu từ chính bạn</p><h2>Bạn không cần phải có tất cả câu trả lời ngay hôm nay.</h2><p>Hãy bắt đầu bằng việc nhìn lại những gì bạn đã làm, những điều bạn còn băn khoăn và những khả năng bạn muốn phát triển.</p><button className="primary large" onClick={onGuide}>Bắt đầu hành trình phản tư →</button></section>
+  </main>;
 }
 
-function Results({ answers, onHome, onBack, onJump, expanded, setExpanded }: { answers: Answers; onHome: () => void; onBack: () => void; onJump: (id:string)=>void; expanded: string|null; setExpanded:(id:string|null)=>void }) {
+function Guide({ onBack, onAbout, onContinue, onResults }: { onBack: () => void; onAbout: () => void; onContinue: () => void; onResults: () => void }) {
+  const items = ["Có 5 nhóm, mỗi nhóm gồm 5 nhiệm vụ.","Không có câu trả lời đúng hoặc sai.","Hãy dựa trên trải nghiệm thực tế của bạn.","Nếu chưa thực hiện, hãy trả lời trung thực; không cần cố chọn theo hướng tích cực.","Bạn có thể làm dần; bộ câu hỏi được khuyến khích hoàn thành trong 1 tuần.","Kết quả gợi ý bước tiếp theo, không đánh giá năng lực hay tương lai nghề nghiệp."];
+  return <main className="guide-page"><SiteNav active="guide" onHome={onBack} onAbout={onAbout} onGuide={() => {}} onAssessment={onContinue} onResults={onResults} /><section className="guide-card"><p className="eyebrow">Trước khi bắt đầu</p><h1>Một số lưu ý</h1><div className="guide-list">{items.map((x,i)=><div key={x}><span>{String(i+1).padStart(2,"0")}</span><p>{x}</p></div>)}</div><div className="privacy-note"><strong>Quyền riêng tư</strong><p>Câu trả lời chỉ được lưu trong trình duyệt trên thiết bị hiện tại. Dữ liệu không tự đồng bộ sang thiết bị khác.</p></div><div className="card-actions"><button className="secondary" onClick={onBack}>Quay lại</button><button className="primary" onClick={onContinue}>Tôi đã hiểu · Tiếp tục</button></div></section></main>;
+}
+
+function Results({ answers, onHome, onAbout, onBack, onJump, expanded, setExpanded }: { answers: Answers; onHome: () => void; onAbout: () => void; onBack: () => void; onJump: (id:string)=>void; expanded: string|null; setExpanded:(id:string|null)=>void }) {
   const stats = summary(tasks, answers); const priorities = selectPriorities(tasks, answers); const complete = stats.answered === 25;
   const byGroup = groups.map((g) => ({ name:g, answered: tasks.filter((t)=>t.group===g && answers[t.id]?.execution && answers[t.id]?.confidence).length }));
   return <main className="results-page" id="results-content"><SiteNav active="results" onHome={onHome} onGuide={onBack} onAssessment={onBack} onResults={() => {}} /><header className="result-header"><div><p className="eyebrow">Kết quả cá nhân hóa</p><h1>Một số định hướng tiếp theo</h1><p>Đây là bản tóm tắt từ câu trả lời bạn đã cung cấp</p></div><div className="no-print result-actions"><button className="secondary" onClick={onBack}>Tiếp tục chỉnh sửa</button><button
