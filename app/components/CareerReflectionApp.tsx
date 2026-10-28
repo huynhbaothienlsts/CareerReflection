@@ -10,6 +10,7 @@ import type { Answer, Answers, Execution, Rule, Task } from "../lib/types";
 const tasks = rawTasks as Task[];
 const rules = rawRules as Rule[];
 const STORE_KEY = "career-reflection-progress-v1";
+const COUNTER_API = "https://career-reflection-counter.thienhb.chatgpt.site/api/counters";
 const groups = [...new Set(tasks.map((t) => t.group))];
 const executions: Execution[] = ["Đã thực hiện", "Đã thực hiện một phần", "Chưa thực hiện"];
 const confidenceLabels = ["Rất không tự tin", "Ít tự tin", "Chưa chắc chắn", "Tự tin", "Rất tự tin"];
@@ -69,7 +70,7 @@ export default function CareerReflectionApp() {
   if (screen === "about") return <AboutPage onHome={() => setScreen("intro")} onGuide={() => setScreen("guide")} onAssessment={() => setScreen(stats.answered + stats.skipped > 0 ? "assessment" : "guide")} onResults={() => setScreen("results")} />;
   if (screen === "intro") return <Intro onStart={() => setScreen("guide")} onAbout={() => setScreen("about")} hasProgress={stats.answered + stats.skipped > 0} onResume={() => setScreen("assessment")} onResults={() => setScreen("results")} onExploreGroup={(groupIndex) => { setIndex(groupIndex * 5); setScreen("assessment"); }} />;
   if (screen === "guide") return <Guide onBack={() => setScreen("intro")} onAbout={() => setScreen("about")} onContinue={() => setScreen("assessment")} onResults={() => setScreen("results")} />;
-  if (screen === "results") return <Results answers={answers} onHome={() => setScreen("intro")} onAbout={() => setScreen("about")} onBack={() => setScreen("assessment")} onJump={(id) => { setIndex(tasks.findIndex((t) => t.id === id)); setScreen("assessment"); }} expanded={expanded} setExpanded={setExpanded} />;
+  if (screen === "results") return <><Results answers={answers} onHome={() => setScreen("intro")} onAbout={() => setScreen("about")} onBack={() => setScreen("assessment")} onJump={(id) => { setIndex(tasks.findIndex((t) => t.id === id)); setScreen("assessment"); }} expanded={expanded} setExpanded={setExpanded} /><CommunityFooter /></>;
 
   const groupIndex = groups.indexOf(current.group);
   return (
@@ -106,6 +107,7 @@ export default function CareerReflectionApp() {
           </article>
         </section>
       </section>
+      <CommunityFooter />
     </main>
   );
 }
@@ -122,6 +124,44 @@ function SiteNav({ active, onHome, onAbout, onGuide, onAssessment, onResults }: 
     </nav>
     <span className="nav-badge">Riêng tư · Tự động lưu</span>
   </header>;
+}
+
+function CommunityFooter() {
+  const [counts, setCounts] = useState({ visits: 0, completions: 0 });
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const token = (storage: Storage, key: string) => {
+      const existing = storage.getItem(key);
+      if (existing) return existing;
+      const created = crypto.randomUUID().replaceAll("-", "");
+      storage.setItem(key, created);
+      return created;
+    };
+    const report = async (event: "visit" | "complete", eventToken: string) => {
+      const response = await fetch(COUNTER_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event, token: eventToken }) });
+      if (!response.ok) throw new Error("Không thể cập nhật thống kê");
+      return response.json() as Promise<{ visits: number; completions: number }>;
+    };
+    const load = async () => {
+      try {
+        let latest = await report("visit", token(sessionStorage, "career-reflection-visit-session"));
+        const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+        const completed = tasks.every((task) => saved?.answers?.[task.id]?.execution && saved?.answers?.[task.id]?.confidence);
+        if (completed && localStorage.getItem("career-reflection-completion-reported") !== "yes") {
+          latest = await report("complete", token(localStorage, "career-reflection-device-token"));
+          localStorage.setItem("career-reflection-completion-reported", "yes");
+        }
+        setCounts(latest); setLoaded(true);
+      } catch {
+        try { const response = await fetch(COUNTER_API); if (response.ok) setCounts(await response.json()); } catch { /* Footer vẫn hiển thị an toàn khi ngoại tuyến. */ }
+        setLoaded(true);
+      }
+    };
+    void load();
+  }, []);
+
+  return <footer className="community-footer" aria-label="Thống kê cộng đồng"><div><p className="eyebrow">Cộng đồng đang sử dụng công cụ</p><div className="community-stats"><article><span aria-hidden="true">↗</span><strong>{loaded ? counts.visits.toLocaleString("vi-VN") : "—"}</strong><p>Lượt truy cập website</p></article><article><span aria-hidden="true">✓</span><strong>{loaded ? counts.completions.toLocaleString("vi-VN") : "—"}</strong><p>Người dùng đã hoàn thành</p></article></div><small>Số liệu được cập nhật tự động. Không thu thập câu trả lời hoặc thông tin nhận dạng cá nhân.</small></div></footer>;
 }
 
 function Intro({ onStart, onAbout, hasProgress, onResume, onResults, onExploreGroup }: { onStart: () => void; onAbout: () => void; hasProgress: boolean; onResume: () => void; onResults: () => void; onExploreGroup: (groupIndex: number) => void }) {
@@ -151,7 +191,7 @@ function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: n
     { short: "Giải quyết khó khăn", title: "Giải quyết khó khăn khi lựa chọn nghề nghiệp", goal: "Giúp học sinh nhận diện những băn khoăn và suy nghĩ đang cản trở mình, kiểm tra chúng bằng thông tin và bằng chứng, từ đó tìm cách điều chỉnh lựa chọn hoặc tìm kiếm sự hỗ trợ phù hợp.", color: "#B9A0D5", pale: "#F1EAF7", Icon: Puzzle, path: "M 55.730,505.254 A 360 360 0 0 1 183.347,112.491 L 319.959,293.781 A 133 133 0 0 0 272.811,438.885 Z", label: { x: 60, y: 270, w: 190, h: 150 } },
   ];
   const visibleDirection = hoveredDirection ?? selectedDirection;
-  return <section className="research-section" aria-labelledby="research-title">
+  return <><section className="research-section" aria-labelledby="research-title">
     <div className="research-heading">
       <p className="eyebrow">Nền tảng khoa học</p>
       <h2 id="research-title">Công cụ phản tư hỗ trợ phát triển năng lực ra quyết định nghề nghiệp</h2>
@@ -197,7 +237,7 @@ function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: n
         })()}
       </div>
     </article>
-  </section>;
+  </section><CommunityFooter /></>;
 }
 
 function AboutPage({ onHome, onGuide, onAssessment, onResults }: { onHome: () => void; onGuide: () => void; onAssessment: () => void; onResults: () => void }) {
@@ -221,6 +261,7 @@ function AboutPage({ onHome, onGuide, onAssessment, onResults }: { onHome: () =>
     <section className="about-section science-section"><div className="about-kicker"><span>02</span><p>Nền tảng khoa học</p></div><div className="science-intro"><h2>Từ nghiên cứu đến ứng dụng thực tế.</h2><div><p>Công cụ được phát triển từ nghiên cứu khoa học về ảnh hưởng của áp lực đồng lứa đến mức độ trưởng thành nghề nghiệp của học sinh THPT tại TP.HCM.</p><p>Kết quả nghiên cứu cho thấy sự tự tin vào khả năng thực hiện các nhiệm vụ ra quyết định nghề nghiệp đóng vai trò trung gian trong mối liên hệ giữa áp lực đồng lứa và mức độ trưởng thành nghề nghiệp trong mô hình nghiên cứu.</p><p>Phát hiện này gợi mở hướng phát triển công cụ theo hướng hỗ trợ học sinh nhìn lại quá trình lựa chọn nghề nghiệp, tự đánh giá mức độ tự tin và xác định những nội dung cần cải thiện.</p></div></div><div className="research-process">{process.map((step, index) => <article key={step[0]}><span>{step[0]}</span><h3>{step[1]}</h3><p>{step[2]}</p>{index < process.length - 1 && <i aria-hidden="true">→</i>}</article>)}</div><small className="science-note">Sơ đồ thể hiện quá trình chuyển hóa định hướng nghiên cứu thành cấu trúc công cụ, không phải bằng chứng kiểm định hiệu quả của công cụ.</small></section>
     <section className="about-section team-section"><div className="about-kicker"><span>03</span><p>Nhóm tác giả</p></div><h2>Đằng sau công cụ phản tư.</h2><p className="team-intro">Công cụ phản tư được hình thành từ mong muốn tìm hiểu những khó khăn mà học sinh gặp phải trong quá trình lựa chọn nghề nghiệp và tìm kiếm những cách thức hỗ trợ thiết thực hơn.</p><div className="author-grid">{authors.map((author, index) => <article key={author[0]}><div className="portrait-placeholder" aria-label="Vị trí ảnh chân dung sẽ được bổ sung sau"><span>{String(index + 1).padStart(2, "0")}</span><p>Ảnh chân dung<br />sẽ được bổ sung</p></div><div><h3>{author[0]}</h3><p>{author[1]}</p></div></article>)}</div><div className="team-message"><p>Chúng mình hy vọng công cụ phản tư này có thể giúp các bạn học sinh hiểu bản thân rõ hơn, tự tin cân nhắc những lựa chọn và từng bước tìm ra hướng đi phù hợp với chính mình.</p><p>Chúng mình tin rằng mỗi người đều có một hành trình riêng. Thay vì đưa ra câu trả lời thay các bạn, chúng mình mong công cụ này có thể giúp các bạn có thêm cơ sở để tự đưa ra những quyết định có ý nghĩa với tương lai của mình.</p></div></section>
     <section className="about-cta"><p className="eyebrow">Bắt đầu từ chính bạn</p><h2>Bạn không cần phải có tất cả câu trả lời ngay hôm nay.</h2><p>Hãy bắt đầu bằng việc nhìn lại những gì bạn đã làm, những điều bạn còn băn khoăn và những khả năng bạn muốn phát triển.</p><button className="primary large" onClick={onGuide}>Bắt đầu hành trình phản tư →</button></section>
+    <CommunityFooter />
   </main>;
 }
 
@@ -256,6 +297,7 @@ function Guide({ onBack, onAbout, onContinue, onResults }: { onBack: () => void;
     </div></section>
     <section className="guide-section journey-guide"><div className="guide-section-heading"><span>02</span><div><p className="eyebrow">Quy trình sử dụng</p><h2>Hành trình của bạn với công cụ</h2></div></div><div className="guide-journey">{journey.map(({ Icon, title, copy }, index) => <article key={title}><div className="guide-journey-icon"><Icon aria-hidden="true" /></div><span>Giai đoạn {index + 1}</span><h3>{title}</h3><p>{copy}</p>{index < journey.length - 1 && <i aria-hidden="true">→</i>}</article>)}</div></section>
     <section className="guide-section notes-guide"><div className="guide-section-heading"><span>03</span><div><p className="eyebrow">Lưu ý khi sử dụng</p><h2>Một vài điều dành cho bạn</h2></div></div><div className="guide-note-grid">{notes.map(({ Icon, title, copy }) => <article key={title}><Icon aria-hidden="true" /><div><h3>{title}</h3><p>{copy}</p></div></article>)}</div><blockquote>“Bạn không cần có tất cả câu trả lời ngay hôm nay. Hãy bắt đầu từ những gì bạn biết về bản thân và từng bước khám phá điều mình còn muốn tìm hiểu.”</blockquote><div className="guide-start"><button className="secondary" onClick={onBack}>Quay lại trang chủ</button><button className="primary large" onClick={onContinue}>Tôi đã hiểu · Bắt đầu</button></div></section>
+    <CommunityFooter />
   </main>;
 }
 
