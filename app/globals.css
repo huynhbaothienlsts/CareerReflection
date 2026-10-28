@@ -35,4 +35,5 @@ body{background:linear-gradient(180deg,#fbfdfb 0%,#f4f9f6 100%)}
 @media(max-width:900px){.journey-layout{grid-template-columns:1fr;gap:22px}.journey-model{max-width:620px}.journey-popover{width:100%;max-width:620px;margin:0 auto}}
 @media(max-width:620px){.journey-layout{margin-top:18px}.journey-model{width:calc(100% + 18px);margin-left:-9px}.journey-label{gap:4px;padding:6px}.journey-label svg{width:34px;height:34px}.journey-label b{font-size:17px}.journey-label span{font-size:18px}.journey-center-content strong{font-size:32px}.journey-center-content span{font-size:21px}.journey-hint{font-size:.86rem;padding:0 6px}.journey-popover{padding:24px 20px;border-radius:20px}.journey-popover h4{font-size:1.55rem}.journey-popover p{line-height:1.62}}
 @media(prefers-reduced-motion:reduce){.journey-sector,.journey-sector path,.journey-popover,.journey-close{animation:none;transition:none}}
+.journey-label svg,.journey-label b{color:#315a53}
 
