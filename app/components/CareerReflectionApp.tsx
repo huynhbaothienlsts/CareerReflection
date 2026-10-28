@@ -119,6 +119,7 @@ function Intro({ onStart, hasProgress, onResume, onResults }: { onStart: () => v
 }
 
 function ResearchFoundation() {
+  const [activeDirection, setActiveDirection] = useState(0);
   const concepts = [
     { code: "CDMSE", name: "Niềm tin vào bản thân trong việc đưa ra quyết định nghề nghiệp", description: "Mức độ tự tin vào khả năng của bản thân trong việc tham gia vào các hoạt động và đưa ra những quyết định có ảnh hưởng đến con đường định hướng nghề nghiệp." },
     { code: "PP", name: "Áp lực đồng trang lứa", description: "Sự ảnh hưởng từ nhóm bạn đồng trang lứa nhằm khiến cá nhân hòa nhập hoặc tuân theo chuẩn mực của nhóm." },
@@ -131,6 +132,13 @@ function ResearchFoundation() {
     ["Lập kế hoạch", "Xem xét tính khả thi và hệ quả của kế hoạch", "Đánh giá tính khả thi và hệ quả"],
     ["Giải quyết vấn đề", "Phân tích vấn đề và đánh giá các phương án giải quyết", "Nhận diện giả định, đánh giá và suy luận"],
   ];
+  const directions = [
+    { title: "Hiểu bản thân và nghề mình chọn", goal: "Giúp học sinh nhận ra điểm mạnh, sở thích và những điều mình coi trọng; hiểu những yếu tố ảnh hưởng đến cách nhìn nhận bản thân và lựa chọn nghề nghiệp." },
+    { title: "Tìm hiểu và kiểm tra thông tin nghề nghiệp", goal: "Giúp học sinh tìm kiếm thông tin về ngành nghề, phân biệt thông tin đáng tin cậy với ý kiến chủ quan và nhận ra những điều mình cần tìm hiểu thêm trước khi lựa chọn." },
+    { title: "So sánh và cân nhắc các lựa chọn nghề nghiệp", goal: "Giúp học sinh mở rộng các lựa chọn, so sánh ưu nhược điểm và hiểu rõ vì sao mình ưu tiên một nghề hơn những nghề khác." },
+    { title: "Lên kế hoạch theo đuổi nghề nghiệp", goal: "Giúp học sinh xác định những việc cần làm, chuẩn bị nguồn lực cần thiết và dự đoán khó khăn để xây dựng kế hoạch phù hợp với điều kiện hiện tại." },
+    { title: "Giải quyết khó khăn khi lựa chọn nghề nghiệp", goal: "Giúp học sinh nhận diện những băn khoăn và suy nghĩ đang cản trở mình, kiểm tra chúng bằng thông tin và bằng chứng, từ đó tìm cách điều chỉnh lựa chọn hoặc tìm kiếm sự hỗ trợ phù hợp." },
+  ];
   return <section className="research-section" aria-labelledby="research-title">
     <div className="research-heading">
       <p className="eyebrow">Nền tảng khoa học</p>
@@ -138,12 +146,25 @@ function ResearchFoundation() {
     </div>
     <article className="goal-panel">
       <div className="section-number">01</div>
-      <div><h3>Mục tiêu</h3><p>Hỗ trợ học sinh THPT củng cố niềm tin vào năng lực ra quyết định nghề nghiệp (CDMSE) và hạn chế ảnh hưởng tiêu cực từ áp lực đồng trang lứa (PP), qua đó góp phần phát triển mức độ trưởng thành nghề nghiệp (CM).</p></div>
+      <div><h3>Mục tiêu</h3><p>Giúp học sinh phản tư về quá trình ra quyết định nghề nghiệp, đánh giá mức độ thực hiện và sự tự tin đối với từng nhiệm vụ, từ đó nhận diện những nhiệm vụ chưa thực hiện và nhận gợi ý hành động phù hợp.</p><p>Đề xuất hành động phù hợp để nâng cao CDMSE, giảm tác động của PP. Từ đó củng cố khả năng ra quyết định nghề nghiệp độc lập và góp phần phát triển CM.</p></div>
     </article>
     <div className="concept-grid">{concepts.map((concept) => <article key={concept.code} className="concept-card"><span>{concept.code}</span><h3>{concept.name}</h3><p>{concept.description}</p></article>)}</div>
     <article className="foundation-panel">
-      <div className="foundation-intro"><div className="section-number">02</div><div><h3>Cơ sở xây dựng</h3><p>Dựa trên năm nhóm nhiệm vụ CDMSE, kết hợp với các kỹ năng tư duy phản biện.</p></div></div>
+      <div className="foundation-intro"><div className="section-number">02</div><div><h3>Cơ sở xây dựng</h3></div></div>
+      <div className="evidence-grid">
+        <article><span>Thực tiễn</span><p>Hall và cộng sự (2011) đề xuất kết hợp giải quyết vấn đề với tư duy phản biện để hỗ trợ học sinh ứng phó với áp lực đồng trang lứa (PP) [1].</p></article>
+        <article><span>Nghiên cứu</span><p>Kim và Hwang (2016) ghi nhận mối tương quan thuận giữa khuynh hướng tư duy phản biện và niềm tin vào khả năng ra quyết định nghề nghiệp (CDMSE) ở sinh viên điều dưỡng (r = 0,519; p &lt; 0,001) [2].</p></article>
+        <article><span>Lý thuyết</span><p>Dựa trên sự tương đồng giữa năm nhóm nhiệm vụ CDMSE của Taylor và Betz (1983) [5] và các kỹ năng tư duy phản biện của Facione (1990) [15], nghiên cứu xây dựng công cụ phản tư nhằm hỗ trợ học sinh tự đánh giá quá trình lựa chọn nghề nghiệp [3].</p></article>
+      </div>
       <div className="foundation-table-wrap"><table className="foundation-table"><thead><tr><th>Các nhóm nhiệm vụ CDMSE</th><th>Mối liên hệ</th><th>Kỹ năng tư duy phản biện</th></tr></thead><tbody>{foundations.map((row) => <tr key={row[0]}>{row.map((cell) => <td key={cell}>{cell}</td>)}</tr>)}</tbody></table></div>
+      <div className="references"><h4>Tài liệu tham khảo</h4><ol><li>K. R. Hall, J. L. Rushing, and A. Khurshid, “Using the Solving Problems Together psychoeducational group counseling model as an intervention for negative peer pressure,” <em>Journal for Specialists in Group Work</em>, vol. 36, no. 2, pp. 97–110, Jun. 2011, doi: 10.1080/01933922.2011.562344.</li><li>K.-H. Kim and E.-H. Hwang, “Influence of Ego-Resilience, Critical Thinking Disposition, and Self Leadership on Career Decision-Making Self-Efficacy in Nursing Students,” <em>Journal of the Korea Academia-Industrial cooperation Society</em>, vol. 17, no. 2, pp. 436–445, Feb. 2016, doi: 10.5762/kais.2016.17.2.436.</li><li>P. A. Facione, “‘The Delphi Report’ Critical Thinking: A Statement of Expert Consensus for Purposes of Educational Assessment and Instruction.” [Online]. Available: <a href="http://www.insightassessment.com" target="_blank" rel="noreferrer">www.insightassessment.com</a>.</li></ol></div>
+    </article>
+    <article className="direction-panel">
+      <div className="direction-heading"><div className="section-number">03</div><div><p className="eyebrow">Mô hình 5 mảnh ghép</p><h3>Hướng đi của công cụ</h3><p>Chọn từng mảnh để xem mục tiêu của nhóm nhiệm vụ tương ứng.</p></div></div>
+      <div className="direction-layout">
+        <div className="five-forces" role="group" aria-label="Năm nhóm nhiệm vụ của công cụ">{directions.map((item, index) => <button key={item.title} className={`force-piece piece-${index + 1}${activeDirection === index ? " active" : ""}`} onClick={() => setActiveDirection(index)} aria-pressed={activeDirection === index}><b>Nhóm {index + 1}</b><span>{item.title}</span></button>)}<div className="force-center"><strong>5</strong><span>nhóm nhiệm vụ</span></div></div>
+        <div className="direction-detail" aria-live="polite"><span>Nhóm {activeDirection + 1}</span><h4>{directions[activeDirection].title}</h4><p><strong>Mục tiêu:</strong> {directions[activeDirection].goal}</p></div>
+      </div>
     </article>
   </section>;
 }
