@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Puzzle, Route, Scale, SearchCheck, UserRoundSearch, X } from "lucide-react";
 import rawTasks from "../data/tasks.json";
 import rawRules from "../data/rules.json";
 import { actionSteps, estimatedTime, findRule, getStateCode, RULE_VERSION, selectPriorities, summary } from "../lib/engine";
@@ -59,7 +60,7 @@ export default function CareerReflectionApp() {
 
   if (!ready) return <main className="loading">Đang mở tiến trình của bạn…</main>;
 
-  if (screen === "intro") return <Intro onStart={() => setScreen("guide")} hasProgress={stats.answered + stats.skipped > 0} onResume={() => setScreen("assessment")} onResults={() => setScreen("results")} />;
+  if (screen === "intro") return <Intro onStart={() => setScreen("guide")} hasProgress={stats.answered + stats.skipped > 0} onResume={() => setScreen("assessment")} onResults={() => setScreen("results")} onExploreGroup={(groupIndex) => { setIndex(groupIndex * 5); setScreen("assessment"); }} />;
   if (screen === "guide") return <Guide onBack={() => setScreen("intro")} onContinue={() => setScreen("assessment")} onResults={() => setScreen("results")} />;
   if (screen === "results") return <Results answers={answers} onHome={() => setScreen("intro")} onBack={() => setScreen("assessment")} onJump={(id) => { setIndex(tasks.findIndex((t) => t.id === id)); setScreen("assessment"); }} expanded={expanded} setExpanded={setExpanded} />;
 
@@ -114,12 +115,13 @@ function SiteNav({ active, onHome, onGuide, onAssessment, onResults }: { active:
   </header>;
 }
 
-function Intro({ onStart, hasProgress, onResume, onResults }: { onStart: () => void; hasProgress: boolean; onResume: () => void; onResults: () => void }) {
-  return <main className="landing"><SiteNav active="home" onHome={() => {}} onGuide={onStart} onAssessment={hasProgress ? onResume : onStart} onResults={onResults} /><section className="hero"><div><p className="eyebrow">Bộ câu hỏi phản tư dành cho học sinh THPT</p><h1>ĐÁNH GIÁ LẠI QUÁ TRÌNH ĐƯA RA LỰA CHỌN NGHỀ NGHIỆP</h1><p className="lead">Chậm lại một chút để nhìn rõ điều bạn đã làm, điều còn băn khoăn và một vài bước tiếp theo phù hợp với chính bạn.</p><div className="hero-actions"><button className="primary large" onClick={onStart}>Bắt đầu</button>{hasProgress && <button className="secondary large" onClick={onResume}>Tiếp tục tiến trình</button>}</div><small>Khoảng 25 nhiệm vụ · Có thể tạm dừng bất cứ lúc nào</small></div><div className="hero-visual" aria-hidden="true"><div className="paper-card back"/><div className="paper-card"><span>01</span><p>Khám phá bản thân</p><div/><span>02</span><p>Tìm hiểu nghề nghiệp</p><div/><span>03</span><p>Chọn bước tiếp theo</p></div></div></section><section className="intro-note"><strong>“Lựa chọn nghề nghiệp”</strong><p>là nghề nghiệp bạn dự định làm trong tương lai, ví dụ Nhân sự hoặc Giáo viên. Công cụ này không kết luận về năng lực hay tương lai của bạn.</p></section><ResearchFoundation /></main>;
+function Intro({ onStart, hasProgress, onResume, onResults, onExploreGroup }: { onStart: () => void; hasProgress: boolean; onResume: () => void; onResults: () => void; onExploreGroup: (groupIndex: number) => void }) {
+  return <main className="landing"><SiteNav active="home" onHome={() => {}} onGuide={onStart} onAssessment={hasProgress ? onResume : onStart} onResults={onResults} /><section className="hero"><div><p className="eyebrow">Bộ câu hỏi phản tư dành cho học sinh THPT</p><h1>ĐÁNH GIÁ LẠI QUÁ TRÌNH ĐƯA RA LỰA CHỌN NGHỀ NGHIỆP</h1><p className="lead">Chậm lại một chút để nhìn rõ điều bạn đã làm, điều còn băn khoăn và một vài bước tiếp theo phù hợp với chính bạn.</p><div className="hero-actions"><button className="primary large" onClick={onStart}>Bắt đầu</button>{hasProgress && <button className="secondary large" onClick={onResume}>Tiếp tục tiến trình</button>}</div><small>Khoảng 25 nhiệm vụ · Có thể tạm dừng bất cứ lúc nào</small></div><div className="hero-visual" aria-hidden="true"><div className="paper-card back"/><div className="paper-card"><span>01</span><p>Khám phá bản thân</p><div/><span>02</span><p>Tìm hiểu nghề nghiệp</p><div/><span>03</span><p>Chọn bước tiếp theo</p></div></div></section><section className="intro-note"><strong>“Lựa chọn nghề nghiệp”</strong><p>là nghề nghiệp bạn dự định làm trong tương lai, ví dụ Nhân sự hoặc Giáo viên. Công cụ này không kết luận về năng lực hay tương lai của bạn.</p></section><ResearchFoundation onExploreGroup={onExploreGroup} /></main>;
 }
 
-function ResearchFoundation() {
-  const [activeDirection, setActiveDirection] = useState(0);
+function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: number) => void }) {
+  const [selectedDirection, setSelectedDirection] = useState<number | null>(null);
+  const [hoveredDirection, setHoveredDirection] = useState<number | null>(null);
   const concepts = [
     { code: "CDMSE", name: "Niềm tin vào bản thân trong việc đưa ra quyết định nghề nghiệp", description: "Mức độ tự tin vào khả năng của bản thân trong việc tham gia vào các hoạt động và đưa ra những quyết định có ảnh hưởng đến con đường định hướng nghề nghiệp." },
     { code: "PP", name: "Áp lực đồng trang lứa", description: "Sự ảnh hưởng từ nhóm bạn đồng trang lứa nhằm khiến cá nhân hòa nhập hoặc tuân theo chuẩn mực của nhóm." },
@@ -133,12 +135,13 @@ function ResearchFoundation() {
     ["Giải quyết vấn đề", "Phân tích vấn đề và đánh giá các phương án giải quyết", "Nhận diện giả định, đánh giá và suy luận"],
   ];
   const directions = [
-    { title: "Hiểu bản thân và nghề mình chọn", goal: "Giúp học sinh nhận ra điểm mạnh, sở thích và những điều mình coi trọng; hiểu những yếu tố ảnh hưởng đến cách nhìn nhận bản thân và lựa chọn nghề nghiệp." },
-    { title: "Tìm hiểu và kiểm tra thông tin nghề nghiệp", goal: "Giúp học sinh tìm kiếm thông tin về ngành nghề, phân biệt thông tin đáng tin cậy với ý kiến chủ quan và nhận ra những điều mình cần tìm hiểu thêm trước khi lựa chọn." },
-    { title: "So sánh và cân nhắc các lựa chọn nghề nghiệp", goal: "Giúp học sinh mở rộng các lựa chọn, so sánh ưu nhược điểm và hiểu rõ vì sao mình ưu tiên một nghề hơn những nghề khác." },
-    { title: "Lên kế hoạch theo đuổi nghề nghiệp", goal: "Giúp học sinh xác định những việc cần làm, chuẩn bị nguồn lực cần thiết và dự đoán khó khăn để xây dựng kế hoạch phù hợp với điều kiện hiện tại." },
-    { title: "Giải quyết khó khăn khi lựa chọn nghề nghiệp", goal: "Giúp học sinh nhận diện những băn khoăn và suy nghĩ đang cản trở mình, kiểm tra chúng bằng thông tin và bằng chứng, từ đó tìm cách điều chỉnh lựa chọn hoặc tìm kiếm sự hỗ trợ phù hợp." },
+    { short: "Hiểu bản thân", title: "Hiểu bản thân và nghề mình chọn", goal: "Giúp học sinh nhận ra điểm mạnh, sở thích và những điều mình coi trọng; hiểu những yếu tố ảnh hưởng đến cách nhìn nhận bản thân và lựa chọn nghề nghiệp.", color: "#E9A18D", pale: "#F8E9E3", Icon: UserRoundSearch, path: "M 193.512,105.105 A 360 360 0 0 1 606.488,105.105 L 476.286,291.053 A 133 133 0 0 0 323.714,291.053 Z", label: { x: 300, y: 105, w: 200, h: 140 } },
+    { short: "Kiểm tra thông tin", title: "Tìm hiểu và kiểm tra thông tin nghề nghiệp", goal: "Giúp học sinh tìm kiếm thông tin về ngành nghề, phân biệt thông tin đáng tin cậy với ý kiến chủ quan và nhận ra những điều mình cần tìm hiểu thêm trước khi lựa chọn.", color: "#83B9AD", pale: "#E6F2EF", Icon: SearchCheck, path: "M 616.653,112.491 A 360 360 0 0 1 744.270,505.254 L 527.189,438.885 A 133 133 0 0 0 480.041,293.781 Z", label: { x: 550, y: 270, w: 190, h: 150 } },
+    { short: "Cân nhắc lựa chọn", title: "So sánh và cân nhắc các lựa chọn nghề nghiệp", goal: "Giúp học sinh mở rộng các lựa chọn, so sánh ưu nhược điểm và hiểu rõ vì sao mình ưu tiên một nghề hơn những nghề khác.", color: "#E8C36A", pale: "#FAF2D9", Icon: Scale, path: "M 740.387,517.205 A 360 360 0 0 1 406.283,759.945 L 402.321,532.980 A 133 133 0 0 0 525.754,443.301 Z", label: { x: 455, y: 535, w: 210, h: 150 } },
+    { short: "Lên kế hoạch", title: "Lên kế hoạch theo đuổi nghề nghiệp", goal: "Giúp học sinh xác định những việc cần làm, chuẩn bị nguồn lực cần thiết và dự đoán khó khăn để xây dựng kế hoạch phù hợp với điều kiện hiện tại.", color: "#91A9D8", pale: "#EAF0FA", Icon: Route, path: "M 393.717,759.945 A 360 360 0 0 1 59.613,517.205 L 274.246,443.301 A 133 133 0 0 0 397.679,532.980 Z", label: { x: 135, y: 550, w: 210, h: 130 } },
+    { short: "Giải quyết khó khăn", title: "Giải quyết khó khăn khi lựa chọn nghề nghiệp", goal: "Giúp học sinh nhận diện những băn khoăn và suy nghĩ đang cản trở mình, kiểm tra chúng bằng thông tin và bằng chứng, từ đó tìm cách điều chỉnh lựa chọn hoặc tìm kiếm sự hỗ trợ phù hợp.", color: "#B9A0D5", pale: "#F1EAF7", Icon: Puzzle, path: "M 55.730,505.254 A 360 360 0 0 1 183.347,112.491 L 319.959,293.781 A 133 133 0 0 0 272.811,438.885 Z", label: { x: 60, y: 270, w: 190, h: 150 } },
   ];
+  const visibleDirection = hoveredDirection ?? selectedDirection;
   return <section className="research-section" aria-labelledby="research-title">
     <div className="research-heading">
       <p className="eyebrow">Nền tảng khoa học</p>
@@ -160,10 +163,29 @@ function ResearchFoundation() {
       <div className="references"><h4>Tài liệu tham khảo</h4><ol><li>K. R. Hall, J. L. Rushing, and A. Khurshid, “Using the Solving Problems Together psychoeducational group counseling model as an intervention for negative peer pressure,” <em>Journal for Specialists in Group Work</em>, vol. 36, no. 2, pp. 97–110, Jun. 2011, doi: 10.1080/01933922.2011.562344.</li><li>K.-H. Kim and E.-H. Hwang, “Influence of Ego-Resilience, Critical Thinking Disposition, and Self Leadership on Career Decision-Making Self-Efficacy in Nursing Students,” <em>Journal of the Korea Academia-Industrial cooperation Society</em>, vol. 17, no. 2, pp. 436–445, Feb. 2016, doi: 10.5762/kais.2016.17.2.436.</li><li>K. M. Taylor and N. E. Betz, “Applications of Self-Efficacy Theory to the Understanding and Treatment of Career Indecision,” 1983.</li><li>P. A. Facione, “‘The Delphi Report’ Critical Thinking: A Statement of Expert Consensus for Purposes of Educational Assessment and Instruction.” [Online]. Available: <a href="http://www.insightassessment.com" target="_blank" rel="noreferrer">www.insightassessment.com</a>.</li></ol></div>
     </article>
     <article className="direction-panel">
-      <div className="direction-heading"><div className="section-number">03</div><div><p className="eyebrow">Mô hình 5 mảnh ghép</p><h3>Hướng đi của công cụ</h3><p>Chọn từng mảnh để xem mục tiêu của nhóm nhiệm vụ tương ứng.</p></div></div>
-      <div className="direction-layout">
-        <div className="five-forces" role="group" aria-label="Năm nhóm nhiệm vụ của công cụ">{directions.map((item, index) => <button key={item.title} className={`force-piece piece-${index + 1}${activeDirection === index ? " active" : ""}`} onClick={() => setActiveDirection(index)} aria-pressed={activeDirection === index}><b>Nhóm {index + 1}</b><span>{item.title}</span></button>)}<div className="force-center"><strong>5</strong><span>nhóm nhiệm vụ</span></div></div>
-        <div className="direction-detail" aria-live="polite"><span>Nhóm {activeDirection + 1}</span><h4>{directions[activeDirection].title}</h4><p><strong>Mục tiêu:</strong> {directions[activeDirection].goal}</p></div>
+      <div className="direction-heading"><div className="section-number">03</div><div><p className="eyebrow">5 mảnh ghép tạo nên hành trình nghề nghiệp</p><h3>Hướng đi của công cụ</h3><p>Di chuột hoặc chọn một mảnh ghép để khám phá mục tiêu của từng nhóm nhiệm vụ.</p></div></div>
+      <div className="journey-layout">
+        <div className="journey-model-wrap">
+          <svg className="journey-model" viewBox="0 0 800 800" role="group" aria-label="Năm nhóm nhiệm vụ tạo nên hành trình nghề nghiệp của bạn">
+            {directions.map((item, index) => {
+              const Icon = item.Icon;
+              return <g key={item.title} className={`journey-sector${visibleDirection === index ? " is-active" : ""}${selectedDirection === index ? " is-selected" : ""}`} role="button" tabIndex={0} aria-label={`Nhóm ${index + 1}: ${item.title}`} aria-pressed={selectedDirection === index} onMouseEnter={() => setHoveredDirection(index)} onMouseLeave={() => setHoveredDirection(null)} onFocus={() => setHoveredDirection(index)} onBlur={() => setHoveredDirection(null)} onClick={() => setSelectedDirection((current) => current === index ? null : index)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedDirection((current) => current === index ? null : index); } if (event.key === "Escape") { setSelectedDirection(null); setHoveredDirection(null); } }}>
+                <path d={item.path} fill={item.pale} stroke={item.color} strokeWidth="5" />
+                <foreignObject x={item.label.x} y={item.label.y} width={item.label.w} height={item.label.h} pointerEvents="none">
+                  <div className="journey-label" style={{ color: item.color }}><Icon aria-hidden="true" /><b>Nhóm {index + 1}</b><span>{item.short}</span></div>
+                </foreignObject>
+              </g>;
+            })}
+            <circle className="journey-center-circle" cx="400" cy="400" r="122" />
+            <foreignObject x="278" y="278" width="244" height="244" pointerEvents="none"><div className="journey-center-content"><strong>Hành trình</strong><span>nghề nghiệp<br />của bạn</span></div></foreignObject>
+          </svg>
+          <p className="journey-hint">Mỗi mảnh ghép là một năng lực cần thiết — bạn có thể bắt đầu từ bất kỳ nhóm nào.</p>
+        </div>
+        {visibleDirection === null ? <aside className="journey-popover is-placeholder"><Puzzle aria-hidden="true" /><h4>Chọn một mảnh ghép</h4><p>Thông tin về mục tiêu của nhóm sẽ xuất hiện tại đây. Trên điện thoại, hãy chạm vào mảnh ghép bạn muốn xem.</p></aside> : (() => {
+          const item = directions[visibleDirection];
+          const Icon = item.Icon;
+          return <aside className={`journey-popover group-tone-${visibleDirection + 1}`} aria-live="polite"><button className="journey-close" aria-label="Đóng thông tin nhóm" onClick={() => { setSelectedDirection(null); setHoveredDirection(null); }}><X aria-hidden="true" /></button><div className="journey-popover-icon"><Icon aria-hidden="true" /></div><span>Nhóm {visibleDirection + 1}</span><h4>{item.title}</h4><p><strong>Mục tiêu:</strong> {item.goal}</p><button className="primary journey-explore" onClick={() => onExploreGroup(visibleDirection)}>Khám phá nhóm</button></aside>;
+        })()}
       </div>
     </article>
   </section>;
