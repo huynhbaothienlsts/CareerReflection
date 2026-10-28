@@ -115,7 +115,37 @@ function SiteNav({ active, onHome, onGuide, onAssessment, onResults }: { active:
 }
 
 function Intro({ onStart, hasProgress, onResume, onResults }: { onStart: () => void; hasProgress: boolean; onResume: () => void; onResults: () => void }) {
-  return <main className="landing"><SiteNav active="home" onHome={() => {}} onGuide={onStart} onAssessment={hasProgress ? onResume : onStart} onResults={onResults} /><section className="hero"><div><p className="eyebrow">Bộ câu hỏi phản tư dành cho học sinh THPT</p><h1>ĐÁNH GIÁ LẠI QUÁ TRÌNH ĐƯA RA LỰA CHỌN NGHỀ NGHIỆP</h1><p className="lead">Chậm lại một chút để nhìn rõ điều bạn đã làm, điều còn băn khoăn và một vài bước tiếp theo phù hợp với chính bạn.</p><div className="hero-actions"><button className="primary large" onClick={onStart}>Bắt đầu</button>{hasProgress && <button className="secondary large" onClick={onResume}>Tiếp tục tiến trình</button>}</div><small>Khoảng 25 nhiệm vụ · Có thể tạm dừng bất cứ lúc nào</small></div><div className="hero-visual" aria-hidden="true"><div className="paper-card back"/><div className="paper-card"><span>01</span><p>Khám phá bản thân</p><div/><span>02</span><p>Tìm hiểu nghề nghiệp</p><div/><span>03</span><p>Chọn bước tiếp theo</p></div></div></section><section className="intro-note"><strong>“Lựa chọn nghề nghiệp”</strong><p>là nghề nghiệp bạn dự định làm trong tương lai, ví dụ Nhân sự hoặc Giáo viên. Công cụ này không kết luận về năng lực hay tương lai của bạn.</p></section></main>;
+  return <main className="landing"><SiteNav active="home" onHome={() => {}} onGuide={onStart} onAssessment={hasProgress ? onResume : onStart} onResults={onResults} /><section className="hero"><div><p className="eyebrow">Bộ câu hỏi phản tư dành cho học sinh THPT</p><h1>ĐÁNH GIÁ LẠI QUÁ TRÌNH ĐƯA RA LỰA CHỌN NGHỀ NGHIỆP</h1><p className="lead">Chậm lại một chút để nhìn rõ điều bạn đã làm, điều còn băn khoăn và một vài bước tiếp theo phù hợp với chính bạn.</p><div className="hero-actions"><button className="primary large" onClick={onStart}>Bắt đầu</button>{hasProgress && <button className="secondary large" onClick={onResume}>Tiếp tục tiến trình</button>}</div><small>Khoảng 25 nhiệm vụ · Có thể tạm dừng bất cứ lúc nào</small></div><div className="hero-visual" aria-hidden="true"><div className="paper-card back"/><div className="paper-card"><span>01</span><p>Khám phá bản thân</p><div/><span>02</span><p>Tìm hiểu nghề nghiệp</p><div/><span>03</span><p>Chọn bước tiếp theo</p></div></div></section><section className="intro-note"><strong>“Lựa chọn nghề nghiệp”</strong><p>là nghề nghiệp bạn dự định làm trong tương lai, ví dụ Nhân sự hoặc Giáo viên. Công cụ này không kết luận về năng lực hay tương lai của bạn.</p></section><ResearchFoundation /></main>;
+}
+
+function ResearchFoundation() {
+  const concepts = [
+    { code: "CDMSE", name: "Niềm tin vào bản thân trong việc đưa ra quyết định nghề nghiệp", description: "Mức độ tự tin vào khả năng của bản thân trong việc tham gia vào các hoạt động và đưa ra những quyết định có ảnh hưởng đến con đường định hướng nghề nghiệp." },
+    { code: "PP", name: "Áp lực đồng trang lứa", description: "Sự ảnh hưởng từ nhóm bạn đồng trang lứa nhằm khiến cá nhân hòa nhập hoặc tuân theo chuẩn mực của nhóm." },
+    { code: "CM", name: "Mức độ trưởng thành nghề nghiệp", description: "Mức độ sẵn sàng đưa ra quyết định nghề nghiệp phù hợp, thể hiện qua khả năng khám phá nghề nghiệp, hiểu bản thân và ra quyết định." },
+  ];
+  const foundations = [
+    ["Tự đánh giá", "Phân tích bản thân và xem xét các nhận định về bản thân", "Phân tích, kiểm tra giả định"],
+    ["Thông tin nghề nghiệp", "Đánh giá độ tin cậy của thông tin nghề nghiệp", "Đánh giá bằng chứng"],
+    ["Lựa chọn mục tiêu", "So sánh và cân nhắc các lựa chọn nghề nghiệp", "So sánh, suy luận, xem xét phương án thay thế"],
+    ["Lập kế hoạch", "Xem xét tính khả thi và hệ quả của kế hoạch", "Đánh giá tính khả thi và hệ quả"],
+    ["Giải quyết vấn đề", "Phân tích vấn đề và đánh giá các phương án giải quyết", "Nhận diện giả định, đánh giá và suy luận"],
+  ];
+  return <section className="research-section" aria-labelledby="research-title">
+    <div className="research-heading">
+      <p className="eyebrow">Nền tảng khoa học</p>
+      <h2 id="research-title">Công cụ phản tư hỗ trợ phát triển năng lực ra quyết định nghề nghiệp</h2>
+    </div>
+    <article className="goal-panel">
+      <div className="section-number">01</div>
+      <div><h3>Mục tiêu</h3><p>Hỗ trợ học sinh THPT củng cố niềm tin vào năng lực ra quyết định nghề nghiệp (CDMSE) và hạn chế ảnh hưởng tiêu cực từ áp lực đồng trang lứa (PP), qua đó góp phần phát triển mức độ trưởng thành nghề nghiệp (CM).</p></div>
+    </article>
+    <div className="concept-grid">{concepts.map((concept) => <article key={concept.code} className="concept-card"><span>{concept.code}</span><h3>{concept.name}</h3><p>{concept.description}</p></article>)}</div>
+    <article className="foundation-panel">
+      <div className="foundation-intro"><div className="section-number">02</div><div><h3>Cơ sở xây dựng</h3><p>Dựa trên năm nhóm nhiệm vụ CDMSE, kết hợp với các kỹ năng tư duy phản biện.</p></div></div>
+      <div className="foundation-table-wrap"><table className="foundation-table"><thead><tr><th>Các nhóm nhiệm vụ CDMSE</th><th>Mối liên hệ</th><th>Kỹ năng tư duy phản biện</th></tr></thead><tbody>{foundations.map((row) => <tr key={row[0]}>{row.map((cell) => <td key={cell}>{cell}</td>)}</tr>)}</tbody></table></div>
+    </article>
+  </section>;
 }
 
 function Guide({ onBack, onContinue, onResults }: { onBack: () => void; onContinue: () => void; onResults: () => void }) {
