@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Puzzle, Route, Scale, SearchCheck, UserRoundSearch, X } from "lucide-react";
+import { ChartNoAxesCombined, CheckCircle2, ClipboardCheck, Clock3, Compass, Lightbulb, Puzzle, Route, Scale, SearchCheck, ShieldCheck, UserRoundSearch, X } from "lucide-react";
 import rawTasks from "../data/tasks.json";
 import rawRules from "../data/rules.json";
 import { actionSteps, estimatedTime, findRule, getStateCode, RULE_VERSION, selectPriorities, summary } from "../lib/engine";
@@ -225,8 +225,38 @@ function AboutPage({ onHome, onGuide, onAssessment, onResults }: { onHome: () =>
 }
 
 function Guide({ onBack, onAbout, onContinue, onResults }: { onBack: () => void; onAbout: () => void; onContinue: () => void; onResults: () => void }) {
-  const items = ["Có 5 nhóm, mỗi nhóm gồm 5 nhiệm vụ.","Không có câu trả lời đúng hoặc sai.","Hãy dựa trên trải nghiệm thực tế của bạn.","Nếu chưa thực hiện, hãy trả lời trung thực; không cần cố chọn theo hướng tích cực.","Bạn có thể làm dần; bộ câu hỏi được khuyến khích hoàn thành trong 1 tuần.","Kết quả gợi ý bước tiếp theo, không đánh giá năng lực hay tương lai nghề nghiệp."];
-  return <main className="guide-page"><SiteNav active="guide" onHome={onBack} onAbout={onAbout} onGuide={() => {}} onAssessment={onContinue} onResults={onResults} /><section className="guide-card"><p className="eyebrow">Trước khi bắt đầu</p><h1>Một số lưu ý</h1><div className="guide-list">{items.map((x,i)=><div key={x}><span>{String(i+1).padStart(2,"0")}</span><p>{x}</p></div>)}</div><div className="privacy-note"><strong>Quyền riêng tư</strong><p>Câu trả lời chỉ được lưu trong trình duyệt trên thiết bị hiện tại. Dữ liệu không tự đồng bộ sang thiết bị khác.</p></div><div className="card-actions"><button className="secondary" onClick={onBack}>Quay lại</button><button className="primary" onClick={onContinue}>Tôi đã hiểu · Tiếp tục</button></div></section></main>;
+  const executionLevels = [
+    ["Đã thực hiện", "Bạn đã hoàn thành những nội dung chính được yêu cầu."],
+    ["Đã thực hiện một phần", "Bạn đã bắt đầu hoặc hoàn thành một số nội dung, nhưng vẫn còn phần quan trọng chưa hoàn thành."],
+    ["Chưa thực hiện", "Bạn chưa bắt đầu và chưa có hành động cụ thể nào cho nhiệm vụ này."],
+  ];
+  const confidenceLevels = [
+    ["1", "Rất không tự tin", "Bạn gần như chưa tin tưởng vào khả năng thực hiện nhiệm vụ của mình."],
+    ["2", "Ít tự tin", "Bạn nghiêng về việc cho rằng mình chưa đủ khả năng, dù có thể biết cách bắt đầu."],
+    ["3", "Chưa chắc chắn", "Bạn còn phân vân và chưa nghiêng rõ về khả năng làm được hay chưa làm được."],
+    ["4", "Tự tin", "Bạn tin mình có thể thực hiện, dù có thể vẫn cần thêm thời gian hoặc hỗ trợ."],
+    ["5", "Rất tự tin", "Bạn tin tưởng rõ ràng vào khả năng tự thực hiện nhiệm vụ của mình."],
+  ];
+  const journey = [
+    { Icon: ClipboardCheck, title: "Tự đánh giá", copy: "Trả lời 25 câu hỏi về mức độ thực hiện và mức độ tự tin đối với từng nhiệm vụ ra quyết định nghề nghiệp." },
+    { Icon: Lightbulb, title: "Xác định nhiệm vụ cần thực hiện", copy: "Xem kết quả tổng quát, nhận biết nhiệm vụ chưa hoàn thành hoặc mới hoàn thành một phần và nhận gợi ý hành động cá nhân hóa." },
+    { Icon: ChartNoAxesCombined, title: "Thực hành và đánh giá lại", copy: "Thực hiện gợi ý, theo dõi tiến độ, so sánh với tiêu chí thành công và tiếp tục cải thiện." },
+  ];
+  const notes = [
+    { Icon: CheckCircle2, title: "Không có đáp án đúng hay sai", copy: "Hãy trả lời trung thực theo trải nghiệm và cảm nhận hiện tại của bạn." },
+    { Icon: Compass, title: "Không cần biết trước nghề mình muốn làm", copy: "Công cụ vẫn hữu ích khi bạn đang khám phá hoặc chưa có lựa chọn cụ thể." },
+    { Icon: ShieldCheck, title: "Đây là công cụ phản tư, không phải bài kiểm tra", copy: "Kết quả hỗ trợ bạn nhận diện nội dung cần tìm hiểu hoặc cải thiện thêm, không kết luận cố định về năng lực của bạn." },
+    { Icon: Clock3, title: "Đi theo nhịp độ của riêng bạn", copy: "Bạn có thể làm theo tốc độ phù hợp. Nên hoàn thành toàn bộ trong vòng một tuần để duy trì sự liền mạch, nhưng không cần hoàn thành ngay lập tức." },
+  ];
+  return <main className="guide-page guide-expanded"><SiteNav active="guide" onHome={onBack} onAbout={onAbout} onGuide={() => {}} onAssessment={onContinue} onResults={onResults} />
+    <header className="guide-hero"><p className="eyebrow">Hướng dẫn sử dụng</p><h1>Hiểu rõ từng lựa chọn trước khi bắt đầu.</h1><p>25 nhiệm vụ giúp bạn nhìn lại quá trình tìm hiểu và lựa chọn nghề nghiệp. Với mỗi nhiệm vụ, hãy trả lời hai câu hỏi dựa trên trải nghiệm và cảm nhận hiện tại của bạn.</p></header>
+    <section className="guide-section answer-guide"><div className="guide-section-heading"><span>01</span><div><p className="eyebrow">Hướng dẫn trả lời câu hỏi</p><h2>Làm thế nào để trả lời?</h2></div></div><div className="answer-card-grid">
+      <article className="answer-explainer"><div className="answer-card-head"><span>Câu hỏi 1</span><h3>Mức độ thực hiện</h3><p>Bạn đã thực hiện nhiệm vụ này chưa?</p></div><div className="execution-levels">{executionLevels.map((level, index) => <div key={level[0]}><span>{index + 1}</span><p><strong>{level[0]}</strong>{level[1]}</p></div>)}</div><details className="guide-example"><summary>Xem ví dụ: tìm hiểu thông tin nghề nghiệp</summary><div><p><strong>Đã thực hiện:</strong> Đã tìm hiểu các ngành nghề và thu thập đủ thông tin cần thiết theo yêu cầu.</p><p><strong>Đã thực hiện một phần:</strong> Mới tìm hiểu một vài ngành nghề nhưng chưa có đủ thông tin cần thiết.</p><p><strong>Chưa thực hiện:</strong> Chưa bắt đầu tìm hiểu ngành nghề nào.</p></div></details><aside className="guide-boundary"><strong>Ranh giới cần nhớ</strong><p>Đã thử một lần chưa có nghĩa là đã hoàn thành. Hãy căn cứ vào nội dung cụ thể và mức độ hoàn thành các yêu cầu chính của nhiệm vụ.</p></aside></article>
+      <article className="answer-explainer"><div className="answer-card-head"><span>Câu hỏi 2</span><h3>Mức độ tự tin</h3><p>Bạn tự tin đến mức nào về khả năng thực hiện nhiệm vụ này?</p></div><div className="confidence-levels">{confidenceLevels.map((level) => <div key={level[0]}><b>{level[0]}</b><p><strong>{level[1]}</strong>{level[2]}</p></div>)}</div><div className="confidence-compare"><div><strong>Ít tự tin</strong><p>Bạn nghiêng về việc mình chưa đủ khả năng.</p></div><div><strong>Chưa chắc chắn</strong><p>Bạn còn phân vân, chưa nghiêng rõ về phía nào.</p></div></div><aside className="guide-boundary"><strong>Hai khía cạnh khác nhau</strong><p>Bạn có thể chưa từng lập kế hoạch nghề nghiệp nhưng vẫn rất tự tin rằng mình có thể học cách lập kế hoạch. Mức độ thực hiện không quyết định mức độ tự tin.</p></aside></article>
+    </div></section>
+    <section className="guide-section journey-guide"><div className="guide-section-heading"><span>02</span><div><p className="eyebrow">Quy trình sử dụng</p><h2>Hành trình của bạn với công cụ</h2></div></div><div className="guide-journey">{journey.map(({ Icon, title, copy }, index) => <article key={title}><div className="guide-journey-icon"><Icon aria-hidden="true" /></div><span>Giai đoạn {index + 1}</span><h3>{title}</h3><p>{copy}</p>{index < journey.length - 1 && <i aria-hidden="true">→</i>}</article>)}</div></section>
+    <section className="guide-section notes-guide"><div className="guide-section-heading"><span>03</span><div><p className="eyebrow">Lưu ý khi sử dụng</p><h2>Một vài điều dành cho bạn</h2></div></div><div className="guide-note-grid">{notes.map(({ Icon, title, copy }) => <article key={title}><Icon aria-hidden="true" /><div><h3>{title}</h3><p>{copy}</p></div></article>)}</div><blockquote>“Bạn không cần có tất cả câu trả lời ngay hôm nay. Hãy bắt đầu từ những gì bạn biết về bản thân và từng bước khám phá điều mình còn muốn tìm hiểu.”</blockquote><div className="guide-start"><button className="secondary" onClick={onBack}>Quay lại trang chủ</button><button className="primary large" onClick={onContinue}>Tôi đã hiểu · Bắt đầu</button></div></section>
+  </main>;
 }
 
 function Results({ answers, onHome, onAbout, onBack, onJump, expanded, setExpanded }: { answers: Answers; onHome: () => void; onAbout: () => void; onBack: () => void; onJump: (id:string)=>void; expanded: string|null; setExpanded:(id:string|null)=>void }) {
