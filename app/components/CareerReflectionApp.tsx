@@ -242,7 +242,7 @@ function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: n
             {directions.map((item, index) => {
               const Icon = item.Icon;
               return <g key={item.title} className={`journey-sector${selectedDirection === index ? " is-selected" : ""}`} role="button" tabIndex={0} aria-label={`Nhóm ${index + 1}: ${item.title}`} aria-pressed={selectedDirection === index} onMouseEnter={() => setHoveredDirection(index)} onMouseLeave={() => setHoveredDirection(null)} onFocus={() => setHoveredDirection(index)} onBlur={() => setHoveredDirection(null)} onClick={() => setSelectedDirection((current) => current === index ? null : index)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedDirection((current) => current === index ? null : index); } if (event.key === "Escape") { setSelectedDirection(null); setHoveredDirection(null); } }}>
-                <path d={item.path} fill={item.pale} stroke={item.color} strokeWidth="5" />
+                <path d={item.path} fill={item.pale} style={{ fill: item.pale }} stroke={item.color} strokeWidth="5" />
                 <foreignObject x={item.label.x} y={item.label.y} width={item.label.w} height={item.label.h} pointerEvents="none">
                   <div className="journey-label" style={{ color: item.color }}><Icon aria-hidden="true" /><b>Nhóm {index + 1}</b><span>{item.short}</span></div>
                 </foreignObject>

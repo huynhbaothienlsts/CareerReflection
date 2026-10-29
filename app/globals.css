@@ -83,6 +83,8 @@ body{background:linear-gradient(180deg,#fbfdfb 0%,#f4f9f6 100%)}
 .group-heading-themed p:last-child{max-width:760px;margin:10px 0 0;color:var(--muted)}
 .result-student-name{margin:12px 0 5px;color:#35564f!important}.result-student-name strong{color:var(--green-dark)}
 .journey-sector:hover,.journey-sector.is-active,.journey-sector:focus-visible{transform:none;filter:none}
+.journey-sector.is-selected>path,.journey-sector:focus-visible>path{stroke-width:9}
+.journey-sector.is-selected .journey-label svg *,.journey-sector:focus-visible .journey-label svg *,.journey-sector.is-active .journey-label svg *{fill:none!important;stroke-width:1.9!important;filter:none!important}
 @media(max-width:650px){.student-name-card{grid-template-columns:1fr;gap:8px}.student-name-card>small{grid-column:1}.group-heading-themed{grid-template-columns:1fr;padding:22px}.group-heading-icon{width:62px;height:62px;border-radius:18px}.group-heading-icon svg{width:32px;height:32px}}
 
 /* Phần mở đầu trang chủ */
