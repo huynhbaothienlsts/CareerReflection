@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 import { ChartNoAxesCombined, CheckCircle2, ClipboardCheck, Clock3, Compass, Lightbulb, Puzzle, Route, Scale, SearchCheck, ShieldCheck, UserRoundSearch, X } from "lucide-react";
 import rawTasks from "../data/tasks.json";
 import rawRules from "../data/rules.json";
@@ -19,6 +20,13 @@ const obstacles = [
   "Mình chưa có đủ thời gian hoặc cơ hội", "Mình chưa biết nhiệm vụ này có ích gì với mình",
   "Lý do khác", "Mình chưa xác định được nguyên nhân", "Mình không muốn trả lời"
 ];
+const groupThemes = [
+  { title: "Hiểu bản thân và nghề mình chọn", color: "#E9A18D", pale: "#F8E9E3", Icon: UserRoundSearch },
+  { title: "Tìm hiểu và kiểm tra thông tin nghề nghiệp", color: "#83B9AD", pale: "#E6F2EF", Icon: SearchCheck },
+  { title: "So sánh và cân nhắc các lựa chọn nghề nghiệp", color: "#E8C36A", pale: "#FAF2D9", Icon: Scale },
+  { title: "Lên kế hoạch theo đuổi nghề nghiệp", color: "#91A9D8", pale: "#EAF0FA", Icon: Route },
+  { title: "Giải quyết khó khăn khi lựa chọn nghề nghiệp", color: "#B9A0D5", pale: "#F1EAF7", Icon: Puzzle },
+];
 
 type Screen = "intro" | "guide" | "about" | "assessment" | "results";
 
@@ -26,6 +34,7 @@ export default function CareerReflectionApp() {
   const [screen, setScreen] = useState<Screen>("intro");
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
+  const [fullName, setFullName] = useState("");
   const [ready, setReady] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -33,7 +42,7 @@ export default function CareerReflectionApp() {
     try {
       const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
       if (saved?.version === RULE_VERSION) {
-        setAnswers(saved.answers || {}); setIndex(saved.index || 0); setScreen(saved.screen || "intro");
+        setAnswers(saved.answers || {}); setFullName(saved.fullName || ""); setIndex(saved.index || 0); setScreen(saved.screen || "intro");
       }
     } catch { /* Dữ liệu lỗi được bỏ qua an toàn. */ }
     setReady(true);
@@ -41,8 +50,8 @@ export default function CareerReflectionApp() {
 
   useEffect(() => {
     if (!ready) return;
-    localStorage.setItem(STORE_KEY, JSON.stringify({ version: RULE_VERSION, answers, index, screen, savedAt: new Date().toISOString() }));
-  }, [answers, index, screen, ready]);
+    localStorage.setItem(STORE_KEY, JSON.stringify({ version: RULE_VERSION, answers, fullName, index, screen, savedAt: new Date().toISOString() }));
+  }, [answers, fullName, index, screen, ready]);
 
   useEffect(() => {
     const openAbout = () => setScreen("about");
@@ -70,9 +79,11 @@ export default function CareerReflectionApp() {
   if (screen === "about") return <AboutPage onHome={() => setScreen("intro")} onGuide={() => setScreen("guide")} onAssessment={() => setScreen(stats.answered + stats.skipped > 0 ? "assessment" : "guide")} onResults={() => setScreen("results")} />;
   if (screen === "intro") return <Intro onStart={() => setScreen("guide")} onAbout={() => setScreen("about")} hasProgress={stats.answered + stats.skipped > 0} onResume={() => setScreen("assessment")} onResults={() => setScreen("results")} onExploreGroup={(groupIndex) => { setIndex(groupIndex * 5); setScreen("assessment"); }} />;
   if (screen === "guide") return <Guide onBack={() => setScreen("intro")} onAbout={() => setScreen("about")} onContinue={() => setScreen("assessment")} onResults={() => setScreen("results")} />;
-  if (screen === "results") return <><Results answers={answers} onHome={() => setScreen("intro")} onAbout={() => setScreen("about")} onBack={() => setScreen("assessment")} onJump={(id) => { setIndex(tasks.findIndex((t) => t.id === id)); setScreen("assessment"); }} expanded={expanded} setExpanded={setExpanded} /><CommunityFooter /></>;
+  if (screen === "results") return <><Results answers={answers} fullName={fullName} onHome={() => setScreen("intro")} onAbout={() => setScreen("about")} onBack={() => setScreen("assessment")} onJump={(id) => { setIndex(tasks.findIndex((t) => t.id === id)); setScreen("assessment"); }} expanded={expanded} setExpanded={setExpanded} /><CommunityFooter /></>;
 
   const groupIndex = groups.indexOf(current.group);
+  const groupTheme = groupThemes[groupIndex] || groupThemes[0];
+  const GroupIcon = groupTheme.Icon;
   return (
     <main className="app-shell">
       <header className="topbar no-print">
@@ -95,7 +106,8 @@ export default function CareerReflectionApp() {
         </aside>
         <section className="question-area">
           <div className="mobile-progress no-print"><span>Nhóm {groupIndex + 1}/5</span><strong>{stats.answered + stats.skipped}/25</strong><div className="progress"><span style={{ width: `${percent}%` }} /></div></div>
-          <div className="group-heading"><p className="eyebrow">{current.group}</p><h1>{current.groupGoal}</h1><p>Mỗi lựa chọn chỉ đúng với thời điểm hiện tại, bạn có thể quay lại và thay đổi bất cứ lúc nào.</p></div>
+          <label className="student-name-card"><span>Họ và tên <small>(không bắt buộc)</small></span><input type="text" value={fullName} maxLength={80} autoComplete="name" placeholder="Nhập họ và tên của bạn" onChange={(event) => setFullName(event.target.value)} /><small>Chỉ được lưu trên thiết bị này và dùng để hiển thị trong kết quả, file PDF.</small></label>
+          <div className="group-heading group-heading-themed" style={{ "--group-color": groupTheme.color, "--group-pale": groupTheme.pale } as CSSProperties}><div className="group-heading-icon"><GroupIcon aria-hidden="true" /></div><div><p className="eyebrow">Nhóm {groupIndex + 1} · {current.group}</p><h1>{groupTheme.title}</h1><strong>{current.groupGoal}</strong><p>Mỗi lựa chọn chỉ đúng với thời điểm hiện tại, bạn có thể quay lại và thay đổi bất cứ lúc nào.</p></div></div>
           <article className="task-card">
             <div className="task-number">Nhiệm vụ {current.id} · {index + 1}/25</div>
             <h2>{current.title}</h2>
@@ -312,12 +324,12 @@ function Guide({ onBack, onAbout, onContinue, onResults }: { onBack: () => void;
   </main>;
 }
 
-function Results({ answers, onHome, onAbout, onBack, onJump, expanded, setExpanded }: { answers: Answers; onHome: () => void; onAbout: () => void; onBack: () => void; onJump: (id:string)=>void; expanded: string|null; setExpanded:(id:string|null)=>void }) {
+function Results({ answers, fullName, onHome, onAbout, onBack, onJump, expanded, setExpanded }: { answers: Answers; fullName: string; onHome: () => void; onAbout: () => void; onBack: () => void; onJump: (id:string)=>void; expanded: string|null; setExpanded:(id:string|null)=>void }) {
   const stats = summary(tasks, answers); const priorities = selectPriorities(tasks, answers); const complete = stats.answered === 25;
   const byGroup = groups.map((g) => ({ name:g, answered: tasks.filter((t)=>t.group===g && answers[t.id]?.execution && answers[t.id]?.confidence).length }));
-  return <main className="results-page" id="results-content"><SiteNav active="results" onHome={onHome} onGuide={onBack} onAssessment={onBack} onResults={() => {}} /><header className="result-header"><div><p className="eyebrow">Kết quả cá nhân hóa</p><h1>Một số định hướng tiếp theo</h1><p>Đây là bản tóm tắt từ câu trả lời bạn đã cung cấp</p></div><div className="no-print result-actions"><button className="secondary" onClick={onBack}>Tiếp tục chỉnh sửa</button><button
+  return <main className="results-page" id="results-content"><SiteNav active="results" onHome={onHome} onGuide={onBack} onAssessment={onBack} onResults={() => {}} /><header className="result-header"><div><p className="eyebrow">Kết quả cá nhân hóa</p><h1>Một số định hướng tiếp theo</h1>{fullName.trim() && <p className="result-student-name">Họ và tên: <strong>{fullName.trim()}</strong></p>}<p>Đây là bản tóm tắt từ câu trả lời bạn đã cung cấp</p></div><div className="no-print result-actions"><button className="secondary" onClick={onBack}>Tiếp tục chỉnh sửa</button><button
 
-className="primary" onClick={async () => {const element = document.getElementById("results-content"); if (!element) return; const html2pdf = (await import("html2pdf.js")).default; const options = {margin: 10,filename: "ket-qua-huong-nghiep.pdf",image: { type: "jpeg" as const, quality: 0.98 },html2canvas: { scale: 2, backgroundColor: "#ffffff" },jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const }};await html2pdf().set(options).from(element).save();
+className="primary" onClick={async () => {const element = document.getElementById("results-content"); if (!element) return; const html2pdf = (await import("html2pdf.js")).default; const nameSlug = fullName.trim().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, ""); const options = {margin: 10,filename: nameSlug ? `ket-qua-huong-nghiep-${nameSlug}.pdf` : "ket-qua-huong-nghiep.pdf",image: { type: "jpeg" as const, quality: 0.98 },html2canvas: { scale: 2, backgroundColor: "#ffffff" },jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const }};await html2pdf().set(options).from(element).save();
 }}>Xuất PDF</button></div></header>{!complete && <div className="incomplete"><strong>Kết quả</strong><span>Còn {25-stats.answered} nhiệm vụ chưa có đủ hai câu trả lời nên chưa thể tiếp tục</span></div>}<section className="stats-grid"><div><span>Đã thực hiện</span><strong>{stats.done}</strong></div><div><span>Thực hiện một phần</span><strong>{stats.partial}</strong></div><div><span>Chưa thực hiện</span><strong>{stats.notDone}</strong></div><div><span>Đã trả lời</span><strong>{stats.answered}/25</strong></div></section><section className="group-overview"><h2>Tổng quan theo 5 nhóm</h2>{byGroup.map((g)=><div key={g.name}><span>{g.name}</span><div className="progress"><span style={{width:`${g.answered*20}%`}}/></div><b>{g.answered}/5</b></div>)}</section><section className="result-section"><p className="eyebrow">Ưu tiên ban đầu</p><h2>Tối đa ba nhiệm vụ để bắt đầu</h2><p className="section-copy">Thứ tự dựa trên trạng thái, mức ưu tiên và các quan hệ được ghi trong dữ liệu. Bạn vẫn có thể chọn nhiệm vụ khác.</p><div className="priority-list">{priorities.map((task,i)=><PriorityCard key={task.id} task={task} answer={answers[task.id]} rank={i+1} onDone={()=>onJump(task.id)}/>)}</div></section><section className="result-section"><h2>Những gì bạn đã báo cáo là đã làm</h2><div className="chips">{tasks.filter(t=>["Đã thực hiện","Đã thực hiện một phần"].includes(answers[t.id]?.execution||"")).map(t=><button key={t.id} onClick={()=>onJump(t.id)}>{t.id} · {t.title}</button>)}</div></section><section className="result-section remaining"><h2>Các nhiệm vụ còn lại</h2>{tasks.filter(t=>!priorities.some(p=>p.id===t.id)).map(task=>{const rule=findRule(task.id,answers[task.id],rules); return <article key={task.id}><button className="accordion" onClick={()=>setExpanded(expanded===task.id?null:task.id)}><span>{task.id} · {task.title}</span><b>{expanded===task.id?"−":"+"}</b></button>{expanded===task.id&&<div className="accordion-body">{rule?<><p>{rule.interpretation}</p><p><strong>Gợi ý:</strong> {rule.action}</p><button className="text-button" onClick={()=>onJump(task.id)}>Xem lại câu trả lời</button></>:<p>Nhiệm vụ này chưa có đủ dữ liệu để ghép quy tắc.</p>}</div>}</article>})}</section><footer className="result-footer">Phiên bản quy tắc {RULE_VERSION} · Dữ liệu được lưu cục bộ trên thiết bị hiện tại.</footer></main>;
 }
 function PriorityCard({ task, answer, rank, onDone }: { task: Task; answer: Answer; rank:number; onDone:()=>void }) {
