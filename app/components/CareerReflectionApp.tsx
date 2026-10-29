@@ -76,7 +76,7 @@ export default function CareerReflectionApp() {
   return (
     <main className="app-shell">
       <header className="topbar no-print">
-        <button className="brand brand-with-icon" onClick={() => setScreen("intro")}><span className="brand-symbol">✦</span><span>Lựa chọn nghề nghiệp</span></button>
+        <button className="brand brand-with-icon" onClick={() => setScreen("intro")}><span className="brand-symbol">✦</span><span>Công cụ phản tư</span></button>
         <nav className="app-nav" aria-label="Điều hướng chính">
           <button onClick={() => setScreen("intro")}>Trang chủ</button>
           <button onClick={() => setScreen("about")}>Về chúng tôi</button>
@@ -114,7 +114,7 @@ export default function CareerReflectionApp() {
 
 function SiteNav({ active, onHome, onAbout, onGuide, onAssessment, onResults }: { active: "home" | "about" | "guide" | "assessment" | "results"; onHome: () => void; onAbout?: () => void; onGuide: () => void; onAssessment: () => void; onResults: () => void }) {
   return <header className="site-nav no-print">
-    <button className="brand brand-with-icon" onClick={onHome}><span className="brand-symbol">✦</span><span>Lựa chọn nghề nghiệp</span></button>
+    <button className="brand brand-with-icon" onClick={onHome}><span className="brand-symbol">✦</span><span>Công cụ phản tư</span></button>
     <nav aria-label="Điều hướng chính">
       <button className={active === "home" ? "active" : ""} onClick={onHome}>Trang chủ</button>
       <button className={active === "about" ? "active" : ""} onClick={onAbout || (() => window.dispatchEvent(new Event("open-about")))}>Về chúng tôi</button>
@@ -165,7 +165,18 @@ function CommunityFooter() {
 }
 
 function Intro({ onStart, onAbout, hasProgress, onResume, onResults, onExploreGroup }: { onStart: () => void; onAbout: () => void; hasProgress: boolean; onResume: () => void; onResults: () => void; onExploreGroup: (groupIndex: number) => void }) {
-  return <main className="landing"><SiteNav active="home" onHome={() => {}} onAbout={onAbout} onGuide={onStart} onAssessment={hasProgress ? onResume : onStart} onResults={onResults} /><section className="hero"><div><p className="eyebrow">Bộ câu hỏi phản tư dành cho học sinh THPT</p><h1>ĐÁNH GIÁ LẠI QUÁ TRÌNH ĐƯA RA LỰA CHỌN NGHỀ NGHIỆP</h1><p className="lead">Chậm lại một chút để nhìn rõ điều bạn đã làm, điều còn băn khoăn và một vài bước tiếp theo phù hợp với chính bạn.</p><div className="hero-actions"><button className="primary large" onClick={onStart}>Bắt đầu</button>{hasProgress && <button className="secondary large" onClick={onResume}>Tiếp tục tiến trình</button>}</div><small>Khoảng 25 nhiệm vụ · Có thể tạm dừng bất cứ lúc nào</small></div><div className="hero-visual" aria-hidden="true"><div className="paper-card back"/><div className="paper-card"><span>01</span><p>Khám phá bản thân</p><div/><span>02</span><p>Tìm hiểu nghề nghiệp</p><div/><span>03</span><p>Chọn bước tiếp theo</p></div></div></section><section className="intro-note"><strong>“Lựa chọn nghề nghiệp”</strong><p>là nghề nghiệp bạn dự định làm trong tương lai, ví dụ Nhân sự hoặc Giáo viên. Công cụ này không kết luận về năng lực hay tương lai của bạn.</p></section><ResearchFoundation onExploreGroup={onExploreGroup} /></main>;
+  const benefits = [
+    { Icon: UserRoundSearch, title: "Hiểu rõ quá trình của mình", copy: "Đánh giá mức độ thực hiện và mức độ tự tin đối với các nhiệm vụ ra quyết định nghề nghiệp." },
+    { Icon: Lightbulb, title: "Biết mình cần làm gì tiếp theo", copy: "Nhận diện nhiệm vụ chưa thực hiện hoặc cần cải thiện và nhận gợi ý hành động cá nhân hóa." },
+    { Icon: ChartNoAxesCombined, title: "Từng bước tiến bộ", copy: "Thực hành các gợi ý, theo dõi tiến độ và đánh giá lại để tiếp tục cải thiện." },
+  ];
+  return <main className="landing"><SiteNav active="home" onHome={() => {}} onAbout={onAbout} onGuide={onStart} onAssessment={hasProgress ? onResume : onStart} onResults={onResults} />
+    <section className="hero home-hero"><div className="home-hero-copy"><p className="eyebrow">Công cụ phản tư dành cho học sinh THPT</p><h1>Công cụ phản tư hỗ trợ phát triển năng lực ra quyết định nghề nghiệp</h1><p className="home-slogan">Từ thấu hiểu bản thân đến năng lực ra quyết định nghề nghiệp.</p><p className="lead">Bạn đang tìm hiểu nghề nghiệp phù hợp với mình, hay vẫn chưa chắc chắn về lựa chọn trong tương lai? Công cụ này giúp bạn nhìn lại những gì mình đã làm, nhận diện điều cần cải thiện và khám phá các bước tiếp theo.</p><div className="hero-actions"><button className="primary large" onClick={onStart}>Bắt đầu hành trình</button>{hasProgress && <button className="secondary large" onClick={onResume}>Tiếp tục tiến trình</button>}</div></div>
+      <div className="home-benefits"><div className="home-benefits-heading"><p className="eyebrow">Công cụ giúp bạn làm gì?</p></div>{benefits.map(({ Icon, title, copy }, index) => <article key={title}><div className="benefit-icon"><Icon aria-hidden="true" /></div><div><span>0{index + 1}</span><h2>{title}</h2><p>{copy}</p></div></article>)}</div>
+    </section>
+    <section className="home-disclaimer"><ShieldCheck aria-hidden="true" /><p>Đây là công cụ hỗ trợ tự phản tư, không phải bài kiểm tra hay công cụ quyết định nghề nghiệp thay bạn. Hãy bắt đầu từ trải nghiệm hiện tại và đi theo nhịp độ của riêng mình.</p></section>
+    <ResearchFoundation onExploreGroup={onExploreGroup} />
+  </main>;
 }
 
 function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: number) => void }) {
