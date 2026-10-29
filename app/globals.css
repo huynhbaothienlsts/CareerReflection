@@ -91,3 +91,14 @@ body{background:linear-gradient(180deg,#fbfdfb 0%,#f4f9f6 100%)}
 @media(max-width:600px){.home-hero{padding:100px 20px 46px;gap:26px}.home-hero-copy h1{font-size:2.55rem}.home-slogan{font-size:1.35rem}.home-benefits{padding:14px;border-radius:23px}.home-benefits article{grid-template-columns:48px 1fr;padding:15px;gap:12px}.benefit-icon{width:46px;height:46px;border-radius:14px}.benefit-icon svg{width:23px;height:23px}.home-disclaimer{width:auto;margin:0 20px 46px;grid-template-columns:38px 1fr;padding:16px}.home-disclaimer svg{width:21px;height:21px;padding:7px}}
 .home-benefits article:nth-of-type(2) .benefit-icon{background:#fff1cf;color:#896619}.home-benefits article:nth-of-type(3) .benefit-icon{background:var(--lavender);color:#62578a}
 
+/* Không áp dụng hiệu ứng lên toàn bộ mảnh ghép và icon */
+.journey-sector:hover,
+.journey-sector.is-active,
+.journey-sector:focus-visible {
+  transform: none !important;
+  filter: none !important;
+}
+
+.journey-sector.is-active path {
+  fill: revert;
+}
