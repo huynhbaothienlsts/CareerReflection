@@ -215,27 +215,8 @@ function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: n
   ];
   const visibleDirection = hoveredDirection ?? selectedDirection;
   return <><section className="research-section" aria-labelledby="research-title">
-    <div className="research-heading">
-      <p className="eyebrow">Nền tảng khoa học</p>
-      <h2 id="research-title">Công cụ phản tư hỗ trợ phát triển năng lực ra quyết định nghề nghiệp</h2>
-    </div>
-    <article className="goal-panel">
-      <div className="section-number">01</div>
-      <div><h3>Mục tiêu</h3><p>Giúp học sinh phản tư về quá trình ra quyết định nghề nghiệp, đánh giá mức độ thực hiện và sự tự tin đối với từng nhiệm vụ, từ đó nhận diện những nhiệm vụ chưa thực hiện và nhận gợi ý hành động phù hợp.</p><p>Đề xuất hành động phù hợp để nâng cao CDMSE, giảm tác động của PP. Từ đó củng cố khả năng ra quyết định nghề nghiệp độc lập và góp phần phát triển CM.</p></div>
-    </article>
-    <div className="concept-grid">{concepts.map((concept) => <article key={concept.code} className="concept-card"><span>{concept.code}</span><h3>{concept.name}</h3><p>{concept.description}</p></article>)}</div>
-    <article className="foundation-panel">
-      <div className="foundation-intro"><div className="section-number">02</div><div><h3>Cơ sở xây dựng</h3></div></div>
-      <div className="evidence-grid">
-        <article><span>Thực tiễn</span><p>Hall và cộng sự (2011) đề xuất kết hợp giải quyết vấn đề với tư duy phản biện để hỗ trợ học sinh ứng phó với áp lực đồng trang lứa (PP) [1].</p></article>
-        <article><span>Nghiên cứu</span><p>Kim và Hwang (2016) ghi nhận mối tương quan thuận giữa khuynh hướng tư duy phản biện và niềm tin vào khả năng ra quyết định nghề nghiệp (CDMSE) ở sinh viên điều dưỡng (r = 0,519; p &lt; 0,001) [2].</p></article>
-        <article><span>Lý thuyết</span><p>Dựa trên sự tương đồng giữa năm nhóm nhiệm vụ CDMSE của Taylor và Betz (1983) [3] và các kỹ năng tư duy phản biện của Facione (1990) [4], nghiên cứu xây dựng công cụ phản tư nhằm hỗ trợ học sinh tự đánh giá quá trình lựa chọn nghề nghiệp.</p></article>
-      </div>
-      <div className="foundation-table-wrap"><table className="foundation-table"><thead><tr><th>Các nhóm nhiệm vụ CDMSE</th><th>Mối liên hệ</th><th>Kỹ năng tư duy phản biện</th></tr></thead><tbody>{foundations.map((row) => <tr key={row[0]}>{row.map((cell) => <td key={cell}>{cell}</td>)}</tr>)}</tbody></table></div>
-      <div className="references"><h4>Tài liệu tham khảo</h4><ol><li>K. R. Hall, J. L. Rushing, and A. Khurshid, “Using the Solving Problems Together psychoeducational group counseling model as an intervention for negative peer pressure,” <em>Journal for Specialists in Group Work</em>, vol. 36, no. 2, pp. 97–110, Jun. 2011, doi: 10.1080/01933922.2011.562344.</li><li>K.-H. Kim and E.-H. Hwang, “Influence of Ego-Resilience, Critical Thinking Disposition, and Self Leadership on Career Decision-Making Self-Efficacy in Nursing Students,” <em>Journal of the Korea Academia-Industrial cooperation Society</em>, vol. 17, no. 2, pp. 436–445, Feb. 2016, doi: 10.5762/kais.2016.17.2.436.</li><li>K. M. Taylor and N. E. Betz, “Applications of Self-Efficacy Theory to the Understanding and Treatment of Career Indecision,” 1983.</li><li>P. A. Facione, “‘The Delphi Report’ Critical Thinking: A Statement of Expert Consensus for Purposes of Educational Assessment and Instruction.” [Online]. Available: <a href="http://www.insightassessment.com" target="_blank" rel="noreferrer">www.insightassessment.com</a>.</li></ol></div>
-    </article>
     <article className="direction-panel">
-      <div className="direction-heading"><div className="section-number">03</div><div><p className="eyebrow">5 mảnh ghép tạo nên hành trình nghề nghiệp</p><h3>Hướng đi của công cụ</h3><p>Di chuột hoặc chọn một mảnh ghép để khám phá mục tiêu của từng nhóm nhiệm vụ.</p></div></div>
+      <div className="direction-heading"><div><p className="eyebrow">5 mảnh ghép tạo nên hành trình nghề nghiệp</p><h3>Hướng đi của công cụ</h3><p>Di chuột hoặc chọn một mảnh ghép để khám phá mục tiêu của từng nhóm nhiệm vụ.</p></div></div>
       <div className="journey-layout">
         <div className="journey-model-wrap">
           <svg className="journey-model" viewBox="0 0 800 800" role="group" aria-label="Năm nhóm nhiệm vụ tạo nên hành trình nghề nghiệp của bạn">
@@ -259,6 +240,25 @@ function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: n
           return <aside className={`journey-popover group-tone-${visibleDirection + 1}`} aria-live="polite"><button className="journey-close" aria-label="Đóng thông tin nhóm" onClick={() => { setSelectedDirection(null); setHoveredDirection(null); }}><X aria-hidden="true" /></button><div className="journey-popover-icon"><Icon aria-hidden="true" /></div><span>Nhóm {visibleDirection + 1}</span><h4>{item.title}</h4><p><strong>Mục tiêu:</strong> {item.goal}</p><button className="primary journey-explore" onClick={() => onExploreGroup(visibleDirection)}>Khám phá nhóm</button></aside>;
         })()}
       </div>
+    </article>
+    <div className="research-heading">
+      <p className="eyebrow">Nền tảng khoa học</p>
+      <h2 id="research-title">Công cụ phản tư hỗ trợ phát triển năng lực ra quyết định nghề nghiệp</h2>
+    </div>
+    <article className="goal-panel">
+      <div className="section-number">01</div>
+      <div><h3>Mục tiêu</h3><p>Giúp học sinh phản tư về quá trình ra quyết định nghề nghiệp, đánh giá mức độ thực hiện và sự tự tin đối với từng nhiệm vụ, từ đó nhận diện những nhiệm vụ chưa thực hiện và nhận gợi ý hành động phù hợp.</p><p>Đề xuất hành động phù hợp để nâng cao CDMSE, giảm tác động của PP. Từ đó củng cố khả năng ra quyết định nghề nghiệp độc lập và góp phần phát triển CM.</p></div>
+    </article>
+    <div className="concept-grid">{concepts.map((concept) => <article key={concept.code} className="concept-card"><span>{concept.code}</span><h3>{concept.name}</h3><p>{concept.description}</p></article>)}</div>
+    <article className="foundation-panel">
+      <div className="foundation-intro"><div className="section-number">02</div><div><h3>Cơ sở xây dựng</h3></div></div>
+      <div className="evidence-grid">
+        <article><span>Thực tiễn</span><p>Hall và cộng sự (2011) đề xuất kết hợp giải quyết vấn đề với tư duy phản biện để hỗ trợ học sinh ứng phó với áp lực đồng trang lứa (PP) [1].</p></article>
+        <article><span>Nghiên cứu</span><p>Kim và Hwang (2016) ghi nhận mối tương quan thuận giữa khuynh hướng tư duy phản biện và niềm tin vào khả năng ra quyết định nghề nghiệp (CDMSE) ở sinh viên điều dưỡng (r = 0,519; p &lt; 0,001) [2].</p></article>
+        <article><span>Lý thuyết</span><p>Dựa trên sự tương đồng giữa năm nhóm nhiệm vụ CDMSE của Taylor và Betz (1983) [3] và các kỹ năng tư duy phản biện của Facione (1990) [4], nghiên cứu xây dựng công cụ phản tư nhằm hỗ trợ học sinh tự đánh giá quá trình lựa chọn nghề nghiệp.</p></article>
+      </div>
+      <div className="foundation-table-wrap"><table className="foundation-table"><thead><tr><th>Các nhóm nhiệm vụ CDMSE</th><th>Mối liên hệ</th><th>Kỹ năng tư duy phản biện</th></tr></thead><tbody>{foundations.map((row) => <tr key={row[0]}>{row.map((cell) => <td key={cell}>{cell}</td>)}</tr>)}</tbody></table></div>
+      <div className="references"><h4>Tài liệu tham khảo</h4><ol><li>K. R. Hall, J. L. Rushing, and A. Khurshid, “Using the Solving Problems Together psychoeducational group counseling model as an intervention for negative peer pressure,” <em>Journal for Specialists in Group Work</em>, vol. 36, no. 2, pp. 97–110, Jun. 2011, doi: 10.1080/01933922.2011.562344.</li><li>K.-H. Kim and E.-H. Hwang, “Influence of Ego-Resilience, Critical Thinking Disposition, and Self Leadership on Career Decision-Making Self-Efficacy in Nursing Students,” <em>Journal of the Korea Academia-Industrial cooperation Society</em>, vol. 17, no. 2, pp. 436–445, Feb. 2016, doi: 10.5762/kais.2016.17.2.436.</li><li>K. M. Taylor and N. E. Betz, “Applications of Self-Efficacy Theory to the Understanding and Treatment of Career Indecision,” 1983.</li><li>P. A. Facione, “‘The Delphi Report’ Critical Thinking: A Statement of Expert Consensus for Purposes of Educational Assessment and Instruction.” [Online]. Available: <a href="http://www.insightassessment.com" target="_blank" rel="noreferrer">www.insightassessment.com</a>.</li></ol></div>
     </article>
   </section><CommunityFooter /></>;
 }
