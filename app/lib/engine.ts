@@ -1,6 +1,6 @@
 import type { Answer, Answers, Rule, StateCode, Task } from "./types";
 
-export const RULE_VERSION = "2026-10-26-v1";
+export const RULE_VERSION = "2026-10-30-v2";
 
 export function getStateCode(answer?: Answer): StateCode | null {
   if (!answer?.execution || !answer.confidence) return null;
