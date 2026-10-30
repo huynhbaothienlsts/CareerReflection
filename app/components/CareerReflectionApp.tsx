@@ -214,9 +214,9 @@ function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: n
     { short: "Giải quyết khó khăn", title: "Giải quyết khó khăn khi lựa chọn nghề nghiệp", goal: "Giúp học sinh nhận diện những băn khoăn và suy nghĩ đang cản trở mình, kiểm tra chúng bằng thông tin và bằng chứng, từ đó tìm cách điều chỉnh lựa chọn hoặc tìm kiếm sự hỗ trợ phù hợp.", color: "#B9A0D5", pale: "#F1EAF7", Icon: Puzzle, path: "M 55.730,505.254 A 360 360 0 0 1 183.347,112.491 L 319.959,293.781 A 133 133 0 0 0 272.811,438.885 Z", label: { x: 60, y: 270, w: 190, h: 150 } },
   ];
   const visibleDirection = hoveredDirection ?? selectedDirection;
-  return <><section className="research-section" aria-labelledby="research-title">
+  return <><section className="journey-home-section" aria-labelledby="journey-home-title">
     <article className="direction-panel">
-      <div className="direction-heading"><div><p className="eyebrow">5 mảnh ghép tạo nên hành trình nghề nghiệp</p><h3>Hướng đi của công cụ</h3><p>Di chuột hoặc chọn một mảnh ghép để khám phá mục tiêu của từng nhóm nhiệm vụ.</p></div></div>
+      <div className="direction-heading"><div><p className="eyebrow">5 mảnh ghép tạo nên hành trình nghề nghiệp</p><h3 id="journey-home-title">Hướng đi của công cụ</h3><p>Di chuột hoặc chọn một mảnh ghép để khám phá mục tiêu của từng nhóm nhiệm vụ.</p></div></div>
       <div className="journey-layout">
         <div className="journey-model-wrap">
           <svg className="journey-model" viewBox="0 0 800 800" role="group" aria-label="Năm nhóm nhiệm vụ tạo nên hành trình nghề nghiệp của bạn">
@@ -241,6 +241,7 @@ function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: n
         })()}
       </div>
     </article>
+  </section><section className="research-section" aria-labelledby="research-title">
     <div className="research-heading">
       <p className="eyebrow">Nền tảng khoa học</p>
       <h2 id="research-title">Công cụ phản tư hỗ trợ phát triển năng lực ra quyết định nghề nghiệp</h2>

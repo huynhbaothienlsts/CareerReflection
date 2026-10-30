@@ -85,6 +85,9 @@ body{background:linear-gradient(180deg,#fbfdfb 0%,#f4f9f6 100%)}
 .journey-sector:hover,.journey-sector.is-active,.journey-sector:focus-visible{transform:none;filter:none}
 .journey-sector.is-selected>path,.journey-sector:focus-visible>path{stroke-width:9}
 .journey-sector.is-selected .journey-label svg *,.journey-sector:focus-visible .journey-label svg *,.journey-sector.is-active .journey-label svg *{fill:none!important;stroke-width:1.9!important;filter:none!important}
+.journey-home-section{position:relative;z-index:1;max-width:1124px;margin:0 auto;padding:80px 0 0}.journey-home-section .direction-panel{margin-top:0}.journey-home-section .direction-heading{display:block}.journey-home-section .direction-heading h3{font-size:clamp(2rem,4vw,3.45rem);line-height:1.05;letter-spacing:-.035em;text-wrap:balance}.journey-home-section+.research-section{padding-top:80px}
+@media(max-width:900px){.journey-home-section{padding:70px 28px 0}}
+@media(max-width:600px){.journey-home-section{padding:58px 16px 0}.journey-home-section .direction-heading h3{font-size:2.15rem}}
 @media(max-width:650px){.student-name-card{grid-template-columns:1fr;gap:8px}.student-name-card>small{grid-column:1}.group-heading-themed{grid-template-columns:1fr;padding:22px}.group-heading-icon{width:62px;height:62px;border-radius:18px}.group-heading-icon svg{width:32px;height:32px}}
 
 /* Phần mở đầu trang chủ */
