@@ -117,3 +117,19 @@ h1,h2,h3,h4{letter-spacing:.005em!important}
 .journey-sector.is-active path {
   fill: revert;
 }
+
+/* Giữ footer của trang Bộ câu hỏi sau toàn bộ nội dung và thanh nhóm */
+@media (min-width: 901px) {
+  .app-shell .assessment-layout {
+    min-height: calc(100vh - 78px);
+    align-items: stretch;
+  }
+
+  .app-shell .steps {
+    top: 78px;
+    height: auto;
+    min-height: calc(100vh - 78px);
+    align-self: stretch;
+    padding-bottom: 64px;
+  }
+}
