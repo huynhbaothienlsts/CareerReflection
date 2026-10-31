@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
@@ -7,11 +7,18 @@ import rawTasks from "../data/tasks.json";
 import rawRules from "../data/rules.json";
 import { actionSteps, estimatedTime, findRule, getStateCode, RULE_VERSION, selectPriorities, summary } from "../lib/engine";
 import type { Answer, Answers, Execution, Rule, Task } from "../lib/types";
+import {
+  counterToken,
+  refreshCommunityCounts,
+  reportCommunityEvent,
+  useCommunityCounts
+} from "../lib/communityCounter";
 
 const tasks = rawTasks as Task[];
 const rules = rawRules as Rule[];
 const STORE_KEY = "career-reflection-progress-v1";
-const COUNTER_API = "https://career-reflection-counter.thienhb.chatgpt.site/api/counters";
+
+
 const groups = [...new Set(tasks.map((t) => t.group))];
 const executions: Execution[] = ["Đã thực hiện", "Đã thực hiện một phần", "Chưa thực hiện"];
 const confidenceLabels = ["Rất không tự tin", "Ít tự tin", "Chưa chắc chắn", "Tự tin", "Rất tự tin"];
@@ -58,6 +65,41 @@ export default function CareerReflectionApp() {
     window.addEventListener("open-about", openAbout);
     return () => window.removeEventListener("open-about", openAbout);
   }, []);
+
+  // Theo dõi thống kê ở ứng dụng chính, độc lập với footer.
+  const completedAll = tasks.length > 0 && tasks.every((task) =>
+    Boolean(answers[task.id]?.execution && answers[task.id]?.confidence)
+  );
+
+  useEffect(() => {
+    if (!ready) return;
+    const reportVisit = () => {
+      try {
+        const token = counterToken(sessionStorage, "career-reflection-sheet-visit-v1");
+        void reportCommunityEvent("visit", token).catch((error) => console.warn("Chưa ghi nhận lượt truy cập:", error));
+      } catch (error) {
+        console.warn("Không tạo được mã phiên truy cập:", error);
+      }
+    };
+    reportVisit();
+    window.addEventListener("online", reportVisit);
+    return () => window.removeEventListener("online", reportVisit);
+  }, [ready]);
+
+  useEffect(() => {
+    if (!ready || !completedAll) return;
+    const reportCompletion = () => {
+      try {
+        const token = counterToken(localStorage, "career-reflection-sheet-completion-v1");
+        void reportCommunityEvent("complete", token).catch((error) => console.warn("Chưa ghi nhận lượt hoàn thành:", error));
+      } catch (error) {
+        console.warn("Không tạo được mã hoàn thành:", error);
+      }
+    };
+    reportCompletion();
+    window.addEventListener("online", reportCompletion);
+    return () => window.removeEventListener("online", reportCompletion);
+  }, [ready, completedAll]);
 
   const stats = useMemo(() => summary(tasks, answers), [answers]);
   const current = tasks[index];
@@ -140,41 +182,60 @@ function SiteNav({ active, onHome, onAbout, onGuide, onAssessment, onResults }: 
 }
 
 function CommunityFooter() {
-  const [counts, setCounts] = useState({ visits: 0, completions: 0 });
-  const [loaded, setLoaded] = useState(false);
+  const counts = useCommunityCounts();
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    const token = (storage: Storage, key: string) => {
-      const existing = storage.getItem(key);
-      if (existing) return existing;
-      const created = crypto.randomUUID().replaceAll("-", "");
-      storage.setItem(key, created);
-      return created;
+    let active = true;
+    const refresh = () => {
+      void refreshCommunityCounts()
+        .then(() => { if (active) setFailed(false); })
+        .catch((error) => {
+          console.warn("Không đọc được thống kê cộng đồng:", error);
+          if (active) setFailed(true);
+        });
     };
-    const report = async (event: "visit" | "complete", eventToken: string) => {
-      const response = await fetch(COUNTER_API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ event, token: eventToken }) });
-      if (!response.ok) throw new Error("Không thể cập nhật thống kê");
-      return response.json() as Promise<{ visits: number; completions: number }>;
+    refresh();
+    window.addEventListener("online", refresh);
+    return () => {
+      active = false;
+      window.removeEventListener("online", refresh);
     };
-    const load = async () => {
-      try {
-        let latest = await report("visit", token(sessionStorage, "career-reflection-visit-session"));
-        const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
-        const completed = tasks.every((task) => saved?.answers?.[task.id]?.execution && saved?.answers?.[task.id]?.confidence);
-        if (completed && localStorage.getItem("career-reflection-completion-reported") !== "yes") {
-          latest = await report("complete", token(localStorage, "career-reflection-device-token"));
-          localStorage.setItem("career-reflection-completion-reported", "yes");
-        }
-        setCounts(latest); setLoaded(true);
-      } catch {
-        try { const response = await fetch(COUNTER_API); if (response.ok) setCounts(await response.json()); } catch { /* Footer vẫn hiển thị an toàn khi ngoại tuyến. */ }
-        setLoaded(true);
-      }
-    };
-    void load();
   }, []);
 
-  return <footer className="community-footer" aria-label="Thống kê cộng đồng"><div><p className="eyebrow">Cộng đồng đang sử dụng công cụ</p><div className="community-stats"><article><span aria-hidden="true">↗</span><strong>{loaded ? counts.visits.toLocaleString("vi-VN") : "—"}</strong><p>Lượt truy cập website</p></article><article><span aria-hidden="true">✓</span><strong>{loaded ? counts.completions.toLocaleString("vi-VN") : "—"}</strong><p>Người dùng đã hoàn thành</p></article></div><small>Số liệu được cập nhật tự động. Không thu thập câu trả lời hoặc thông tin nhận dạng cá nhân.</small><p className="community-contact">Mọi thắc mắc xin gửi về: <strong>Châu Hồng Thiên An</strong>: <a href="mailto:2107026@lsts.edu.vn">2107026@lsts.edu.vn</a></p></div></footer>;
+  const display = (value: number | undefined) =>
+    value === undefined ? "—" : value.toLocaleString("vi-VN");
+
+  return (
+    <footer className="community-footer" aria-label="Thống kê cộng đồng">
+      <div>
+        <p className="eyebrow">Cộng đồng đang sử dụng công cụ</p>
+        <div className="community-stats">
+          <article>
+            <span aria-hidden="true">↗</span>
+            <strong>{display(counts?.visits)}</strong>
+            <p>Lượt truy cập website</p>
+          </article>
+          <article>
+            <span aria-hidden="true">✓</span>
+            <strong>{display(counts?.completions)}</strong>
+            <p>Lượt hoàn thành bộ câu hỏi</p>
+          </article>
+        </div>
+        <small>
+          {failed && counts === null
+            ? "Tạm thời chưa lấy được số liệu."
+            : failed
+              ? "Đang hiển thị số liệu đã tải trước đó. Tạm thời chưa cập nhật được."
+              : "Thống kê theo phiên truy cập và trình duyệt. Không gửi câu trả lời hoặc họ tên."}
+        </small>
+        <p className="community-contact">
+          Mọi thắc mắc xin gửi về: <strong>Châu Hồng Thiên An</strong>: {" "}
+          <a href="mailto:2107026@lsts.edu.vn">2107026@lsts.edu.vn</a>
+        </p>
+      </div>
+    </footer>
+  );
 }
 
 function Intro({ onStart, onAbout, hasProgress, onResume, onResults, onExploreGroup }: { onStart: () => void; onAbout: () => void; hasProgress: boolean; onResume: () => void; onResults: () => void; onExploreGroup: (groupIndex: number) => void }) {
