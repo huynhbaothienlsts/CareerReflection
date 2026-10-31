@@ -233,7 +233,8 @@ function ResearchFoundation({ onExploreGroup }: { onExploreGroup: (groupIndex: n
             <circle className="journey-center-circle" cx="400" cy="400" r="122" />
             <foreignObject x="278" y="278" width="244" height="244" pointerEvents="none"><div className="journey-center-content"><strong>Hành trình</strong><span>nghề nghiệp<br />của bạn</span></div></foreignObject>
           </svg>
-          <p className="journey-hint">Mỗi mảnh ghép là một năng lực cần thiết — bạn có thể bắt đầu từ bất kỳ nhóm nào.</p>
+          <p className="journey-hint">Mỗi mảnh ghép là một năng lực cần thiết.</p>
+          <p className="journey-hint">Bạn có thể bắt đầu từ bất kỳ nhóm nào.</p>
         </div>
         {visibleDirection === null ? <aside className="journey-popover is-placeholder"><Puzzle aria-hidden="true" /><h4>Chọn một mảnh ghép</h4><p>Thông tin về mục tiêu của nhóm sẽ xuất hiện tại đây. Trên điện thoại, hãy chạm vào mảnh ghép bạn muốn xem.</p></aside> : (() => {
           const item = directions[visibleDirection];
