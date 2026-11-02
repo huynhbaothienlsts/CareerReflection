@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties } from "react";
-import html2pdf from "html2pdf.js";
 import SaveResponses from "./SaveResponses";
 import { ChartNoAxesCombined, CheckCircle2, ClipboardCheck, Clock3, Compass, Lightbulb, Puzzle, Route, Scale, SearchCheck, ShieldCheck, UserRoundSearch, X } from "lucide-react";
 import rawTasks from "../data/tasks.json";
@@ -391,34 +390,21 @@ function Guide({ onBack, onAbout, onContinue, onResults }: { onBack: () => void;
 }
 
 function Results({ answers, fullName, onHome, onAbout, onGuide, onBack, onJump, expanded, setExpanded }: { answers: Answers; fullName: string; onHome: () => void; onAbout: () => void; onGuide: () => void; onBack: () => void; onJump: (id:string)=>void; expanded: string|null; setExpanded:(id:string|null)=>void }) {
-  const [isExportingPdf, setIsExportingPdf] = useState(false);
-  const [pdfError, setPdfError] = useState("");
   const stats = summary(tasks, answers); const priorities = selectPriorities(tasks, answers); const preliminary = stats.answered < 25;
   const byGroup = groups.map((name, index) => { const groupTasks = tasks.filter((task) => task.group === name); const answeredTasks = groupTasks.filter((task) => answers[task.id]?.execution && answers[task.id]?.confidence); const confidence = answeredTasks.length ? answeredTasks.reduce((total, task) => total + (answers[task.id].confidence || 0), 0) / answeredTasks.length : null; return { name, index, tasks: groupTasks, answered: answeredTasks.length, confidence }; });
   const summaryText = stats.answered === 0 ? "Bạn chưa cung cấp đủ dữ liệu để hệ thống tạo nhận định cá nhân hóa. Hãy trả lời những nhiệm vụ phù hợp với trải nghiệm hiện tại của bạn." : `Bạn đã phản hồi ${stats.answered}/25 nhiệm vụ: ${stats.done} nhiệm vụ đã thực hiện, ${stats.partial} nhiệm vụ thực hiện một phần và ${stats.notDone} nhiệm vụ chưa thực hiện. Các gợi ý bên dưới chỉ dựa trên những câu trả lời này.`;
-  const exportPdf = async () => {
-    const element = document.getElementById("results-content");
-    if (!element || isExportingPdf) return;
+  const exportPdf = () => {
+    const previousTitle = document.title;
+    const nameSlug = fullName.trim().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
+    document.title = nameSlug ? `ket-qua-huong-nghiep-${nameSlug}` : "ket-qua-huong-nghiep";
 
-    setIsExportingPdf(true);
-    setPdfError("");
-    try {
-      const nameSlug = fullName.trim().replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "");
-      const options = {
-        margin: 10,
-        filename: nameSlug ? `ket-qua-huong-nghiep-${nameSlug}.pdf` : "ket-qua-huong-nghiep.pdf",
-        image: { type: "jpeg" as const, quality: 0.98 },
-        html2canvas: { scale: 2, backgroundColor: "#ffffff", useCORS: true },
-        jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
-        pagebreak: { mode: ["avoid-all", "css", "legacy"] }
-      };
-      await html2pdf().set(options).from(element).save();
-    } catch (error) {
-      console.error("Không thể xuất PDF:", error);
-      setPdfError("Không thể tạo tệp PDF. Vui lòng tải lại trang và thử lại.");
-    } finally {
-      setIsExportingPdf(false);
-    }
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+    window.print();
+    window.setTimeout(restoreTitle, 1000);
   };
   return <main className="results-page results-redesign" id="results-content">
     <SiteNav active="results" onHome={onHome} onAbout={onAbout} onGuide={onGuide} onAssessment={onBack} onResults={() => {}} />
@@ -428,7 +414,7 @@ function Results({ answers, fullName, onHome, onAbout, onGuide, onBack, onJump, 
     <section className="results-section priority-results"><div className="results-section-heading"><p className="eyebrow">Gợi ý ưu tiên</p><h2>Bạn có thể bắt đầu từ đây</h2><p>Các nhiệm vụ dưới đây được chọn từ câu trả lời, mức tự tin, mức ưu tiên và quan hệ phụ thuộc hiện có. Bạn có thể chọn hướng khác nếu phù hợp hơn.</p></div>{priorities.length?<div className="priority-list">{priorities.map((task,index)=><PriorityCard key={task.id} task={task} answer={answers[task.id]} rank={index+1} expanded={expanded===`priority-${task.id}`} onToggle={()=>setExpanded(expanded===`priority-${task.id}`?null:`priority-${task.id}`)} onDone={()=>onJump(task.id)}/>)}</div>:<div className="empty-suggestion"><Lightbulb aria-hidden="true"/><h3>Chưa có gợi ý phù hợp</h3><p>Hãy phản hồi ít nhất một nhiệm vụ để hệ thống có cơ sở đề xuất bước tiếp theo.</p><button className="primary no-print" onClick={onBack}>Tiếp tục trả lời</button></div>}</section>
     <section className="results-section explore-results"><div className="results-section-heading"><p className="eyebrow">Tự chọn hướng đi</p><h2>Khám phá thêm</h2><p>Mở một nhóm khi bạn muốn xem các nhiệm vụ khác. Bạn không cần thực hiện theo thứ tự.</p></div><div className="explore-groups">{byGroup.map((group)=>{const key=`explore-${group.index}`;const theme=groupThemes[group.index];return <article key={group.name} style={{"--group-color":theme.color,"--group-pale":theme.pale} as CSSProperties}><button className="explore-group-toggle" onClick={()=>setExpanded(expanded===key?null:key)} aria-expanded={expanded===key}><span><b>0{group.index+1}</b>{theme.title}</span><i>{expanded===key?"−":"+"}</i></button>{expanded===key&&<div className="explore-task-list">{group.tasks.map(task=>{const answer=answers[task.id];return <button key={task.id} onClick={()=>onJump(task.id)}><span>{task.id}</span><strong>{task.title}</strong><em>{taskStatus(answer)}</em></button>})}</div>}</article>})}</div></section>
     <SaveResponses answers={answers} fullName={fullName} tasks={tasks} ruleVersion={String(RULE_VERSION)} />
-    <section className="results-next no-print"><div><p className="eyebrow">Bước tiếp theo</p><h2>Bạn muốn làm gì tiếp?</h2>{pdfError&&<p role="alert">{pdfError}</p>}</div><div><button className="secondary" onClick={onBack}>Xem lại câu trả lời</button><button className="secondary" onClick={()=>priorities[0]?onJump(priorities[0].id):onBack()}>Tiếp tục thực hiện nhiệm vụ</button><button className="primary" onClick={exportPdf} disabled={isExportingPdf}>{isExportingPdf?"Đang tạo PDF…":"Xuất PDF"}</button></div></section>
+    <section className="results-next no-print"><div><p className="eyebrow">Bước tiếp theo</p><h2>Bạn muốn làm gì tiếp?</h2></div><div><button className="secondary" onClick={onBack}>Xem lại câu trả lời</button><button className="secondary" onClick={()=>priorities[0]?onJump(priorities[0].id):onBack()}>Tiếp tục thực hiện nhiệm vụ</button><button className="primary" onClick={exportPdf}>Xuất PDF</button></div></section>
     <footer className="result-footer">Phiên bản quy tắc {RULE_VERSION} · Dữ liệu được lưu cục bộ trên thiết bị hiện tại.</footer>
   </main>;
 }
