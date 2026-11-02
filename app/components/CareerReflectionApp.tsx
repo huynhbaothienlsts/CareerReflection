@@ -208,7 +208,7 @@ function CommunityFooter() {
     value === undefined ? "—" : value.toLocaleString("vi-VN");
 
   return (
-    <footer className="community-footer" aria-label="Thống kê cộng đồng">
+    <footer className="community-footer no-print" aria-label="Thống kê cộng đồng">
       <div>
         <p className="eyebrow">Cộng đồng đang sử dụng công cụ</p>
         <div className="community-stats">
@@ -415,7 +415,7 @@ function Results({ answers, fullName, onHome, onAbout, onGuide, onBack, onJump, 
     <section className="results-section explore-results"><div className="results-section-heading"><p className="eyebrow">Tự chọn hướng đi</p><h2>Khám phá thêm</h2><p>Mở một nhóm khi bạn muốn xem các nhiệm vụ khác. Bạn không cần thực hiện theo thứ tự.</p></div><div className="explore-groups">{byGroup.map((group)=>{const key=`explore-${group.index}`;const theme=groupThemes[group.index];return <article key={group.name} style={{"--group-color":theme.color,"--group-pale":theme.pale} as CSSProperties}><button className="explore-group-toggle" onClick={()=>setExpanded(expanded===key?null:key)} aria-expanded={expanded===key}><span><b>0{group.index+1}</b>{theme.title}</span><i>{expanded===key?"−":"+"}</i></button>{expanded===key&&<div className="explore-task-list">{group.tasks.map(task=>{const answer=answers[task.id];return <button key={task.id} onClick={()=>onJump(task.id)}><span>{task.id}</span><strong>{task.title}</strong><em>{taskStatus(answer)}</em></button>})}</div>}</article>})}</div></section>
     <SaveResponses answers={answers} fullName={fullName} tasks={tasks} ruleVersion={String(RULE_VERSION)} />
     <section className="results-next no-print"><div><p className="eyebrow">Bước tiếp theo</p><h2>Bạn muốn làm gì tiếp?</h2></div><div><button className="secondary" onClick={onBack}>Xem lại câu trả lời</button><button className="secondary" onClick={()=>priorities[0]?onJump(priorities[0].id):onBack()}>Tiếp tục thực hiện nhiệm vụ</button><button className="primary" onClick={exportPdf}>Xuất PDF</button></div></section>
-    <footer className="result-footer">Phiên bản quy tắc {RULE_VERSION} · Dữ liệu được lưu cục bộ trên thiết bị hiện tại.</footer>
+    <footer className="result-footer no-print">Phiên bản quy tắc {RULE_VERSION} · Dữ liệu được lưu cục bộ trên thiết bị hiện tại.</footer>
   </main>;
 }
 function taskStatus(answer?: Answer) { if (!answer?.execution || !answer.confidence) return "Chưa phản hồi"; if (answer.execution === "Chưa thực hiện") return "Chưa bắt đầu"; if (answer.execution === "Đã thực hiện một phần") return "Cần hoàn thiện"; if (answer.confidence <= 2) return "Cần xem xét lại"; return "Đã ghi nhận"; }
